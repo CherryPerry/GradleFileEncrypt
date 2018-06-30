@@ -9,7 +9,7 @@ object PasswordReader {
 
     const val LOCAL_PROPERTIES_FILE = "local.properties"
     const val LOCAL_PROPERTIES_KEY = "gfe.password"
-    const val ENVIRONMENT_KEY = "GFE.PASSWORD"
+    const val ENVIRONMENT_KEY = "GFE_PASSWORD"
 
     fun getPassword(logger: Logger?, project: Project, environment: Environment): CharArray {
         // local.properties file
