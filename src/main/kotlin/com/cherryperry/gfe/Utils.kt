@@ -9,8 +9,13 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
+const val BUFFER_SIZE = 8 * 1024
+const val ITERATIONS = 10_000
+const val KEY_LENGTH_BYTES = 16
+const val KEY_LENGTH = KEY_LENGTH_BYTES * 8
+
 fun generateKey(password: CharArray): SecretKey {
-    val keySpec = PBEKeySpec(password, "salt".toByteArray(Charsets.UTF_8), 10_000, 128)
+    val keySpec = PBEKeySpec(password, "salt".toByteArray(Charsets.UTF_8), ITERATIONS, KEY_LENGTH)
     try {
         val secret = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1").generateSecret(keySpec)
         return SecretKeySpec(secret.encoded, "AES")
@@ -20,7 +25,7 @@ fun generateKey(password: CharArray): SecretKey {
 }
 
 fun generateIv(): ByteArray {
-    val ivBytes = ByteArray(16)
+    val ivBytes = ByteArray(KEY_LENGTH_BYTES)
     SecureRandom.getInstanceStrong().nextBytes(ivBytes)
     return ivBytes
 }

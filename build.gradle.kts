@@ -14,10 +14,27 @@ plugins {
     id("java-gradle-plugin")
     id("org.jmailen.kotlinter") version "1.13.0"
     id("com.github.ben-manes.versions") version "0.20.0"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC7-3"
 }
 
 group = "com.cherryperry"
 version = "0"
+
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+detekt {
+    profile("main", Action {
+        config = file("detekt.yml")
+    })
+}
+
+tasks.findByName("check")?.dependsOn("detektCheck")
 
 repositories {
     jcenter()
@@ -25,14 +42,7 @@ repositories {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
-    testImplementation("org.mockito:mockito-core:2.19.0")
+    compileOnly(kotlin("stdlib-jdk8"))
+    testImplementation(kotlin("stdlib-jdk8"))
     testImplementation("junit:junit:4.12")
-}
-
-configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
 }
