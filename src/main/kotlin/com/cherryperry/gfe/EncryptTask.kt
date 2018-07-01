@@ -13,7 +13,12 @@ import javax.crypto.CipherOutputStream
 open class EncryptTask : DefaultTask() {
 
     @get:Input
-    open val files = project.objects.listProperty(File::class.java)
+    open val files = project.objects.listProperty(File::class.java)!!
+
+    init {
+        group = TASK_GROUP
+        description = "Encrypts all unencrypted files from configuration if they exist"
+    }
 
     @TaskAction
     open fun encrypt() {

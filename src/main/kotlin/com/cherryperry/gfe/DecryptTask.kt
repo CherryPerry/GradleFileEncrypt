@@ -13,7 +13,12 @@ import javax.crypto.CipherInputStream
 open class DecryptTask : DefaultTask() {
 
     @get:Input
-    open var files = project.objects.listProperty(File::class.java)
+    open var files = project.objects.listProperty(File::class.java)!!
+
+    init {
+        group = TASK_GROUP
+        description = "Decrypts all encrypted files from configuration if they exist"
+    }
 
     @TaskAction
     open fun decrypt() {
