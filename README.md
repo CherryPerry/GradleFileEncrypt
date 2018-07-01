@@ -37,5 +37,6 @@ This application is a plugin for encrypting and decrypting files of gradle proje
 or as ```GFE_PASSWORD``` environment variable
 1. Add your configuration file to ```.gitignore```
 1. Use ```encryptFiles``` task to encrypt files
+1. Add encrypted versions of files (```super_secret_info1.txt.encrypted```) to your version control
 1. Push your project to unsecure repository
-1. Decrypt files back with ```decryptFiles``` task (on CI or on your development PC)
+1. Decrypt files back with ```decryptFiles``` task (on CI or on your development PC, don't forget to setup password)
