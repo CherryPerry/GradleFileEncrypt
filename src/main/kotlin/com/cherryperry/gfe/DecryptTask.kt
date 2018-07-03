@@ -16,7 +16,7 @@ open class DecryptTask : DefaultTask() {
     open var files = project.objects.listProperty(File::class.java)!!
 
     init {
-        group = TASK_GROUP
+        group = GROUP_NAME
         description = "Decrypts all encrypted files from configuration if they exist"
     }
 

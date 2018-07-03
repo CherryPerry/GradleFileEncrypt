@@ -16,7 +16,7 @@ open class EncryptTask : DefaultTask() {
     open val files = project.objects.listProperty(File::class.java)!!
 
     init {
-        group = TASK_GROUP
+        group = GROUP_NAME
         description = "Encrypts all unencrypted files from configuration if they exist"
     }
 
