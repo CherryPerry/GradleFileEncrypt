@@ -7,14 +7,13 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.FileInputStream
 import java.io.FileOutputStream
 
 class FileEncryptionTest {
 
     companion object {
         private const val CONTENT = "Super secret information"
-        private const val PASSWORD = "password"
+        private val PASSWORD = "password".toCharArray()
     }
 
     @Rule
@@ -27,10 +26,7 @@ class FileEncryptionTest {
 
     @Before
     fun before() {
-        project = ProjectBuilder.builder()
-            .withName("test")
-            .withProjectDir(temporaryFolder.root)
-            .build()
+        project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         decryptTask = project.tasks.create(DecryptTask::class.java.name, DecryptTask::class.java)
         encryptTask = project.tasks.create(EncryptTask::class.java.name, EncryptTask::class.java)
     }
@@ -40,16 +36,33 @@ class FileEncryptionTest {
         // create test file
         val file = temporaryFolder.newFile()
         // write content to it
-        FileOutputStream(file).use { it.writer(Charsets.UTF_8).use { it.write(CONTENT) } }
+        FileOutputStream(file).writer(Charsets.UTF_8).use { it.write(CONTENT) }
         // encrypt file
-        val encryptedFile = encryptTask.encryptFile(file, generateKey(PASSWORD.toCharArray()))
+        val encryptedFile = encryptTask.encryptFile(file, generateKey(PASSWORD))
         Assert.assertNotNull(encryptedFile)
         // delete original
         file.delete()
         // decrypt encrypted
-        decryptTask.decryptFile(file, generateKey(PASSWORD.toCharArray()))
+        decryptTask.decryptFile(file, generateKey(PASSWORD))
         // assert content
-        val content = FileInputStream(file).use { it.reader(Charsets.UTF_8).use { it.readText() } }
+        val content = file.readText(Charsets.UTF_8)
         Assert.assertEquals(CONTENT, content)
+    }
+
+    @Test
+    fun testReEncryption() {
+        // create test file
+        val file = temporaryFolder.newFile()
+        // write content to it
+        FileOutputStream(file).writer(Charsets.UTF_8).use { it.write(CONTENT) }
+        // encrypt file
+        val encryptedFile = encryptTask.encryptFile(file, generateKey(PASSWORD))
+        // save it's content
+        val originalBytes = encryptedFile?.readBytes()
+        // encrypt again
+        encryptTask.encryptFile(file, generateKey(PASSWORD))
+        // check content is same
+        val newBytes = encryptedFile?.readBytes()
+        Assert.assertArrayEquals(originalBytes, newBytes)
     }
 }

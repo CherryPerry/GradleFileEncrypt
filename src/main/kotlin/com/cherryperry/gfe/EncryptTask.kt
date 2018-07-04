@@ -37,8 +37,19 @@ open class EncryptTask : DefaultTask() {
             logger.error("${file.name} does not exist of can't be read")
             return null
         }
-        val cipher = createCipher(Cipher.ENCRYPT_MODE, key, generateIv())
         val encryptedFile = File(file.parentFile, "${file.name}.encrypted")
+        val iv = if (encryptedFile.exists() && encryptedFile.canRead()) {
+            // if encrypted file already exists - reuse it's IV
+            FileInputStream(encryptedFile).use { fileInputStream ->
+                val ivSize = fileInputStream.read()
+                val iv = ByteArray(ivSize)
+                fileInputStream.read(iv)
+                iv
+            }
+        } else {
+            generateIv()
+        }
+        val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
         logger.warn("Encrypted full path $encryptedFile")
         FileInputStream(file).use { fileInputStream ->
             val fileOutputStream = FileOutputStream(encryptedFile)
