@@ -1,11 +1,9 @@
 package com.cherryperry.gfe
 
-import org.gradle.api.Project
-import java.io.File
+import java.util.concurrent.Callable
 
-open class FileEncryptPluginExtension(
-    project: Project
-) {
+open class FileEncryptPluginExtension {
 
-    open val files = project.objects.listProperty(File::class.java)!!
+    var files: Array<Any> = emptyArray()
+    var passwordProvider: Callable<CharArray>? = null
 }

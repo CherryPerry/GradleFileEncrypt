@@ -9,28 +9,36 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.FileOutputStream
 import java.util.Properties
+import java.util.concurrent.Callable
 
 class PasswordReaderTest {
+
+    companion object {
+        private const val password = "PASSWORD"
+    }
 
     @Rule
     @JvmField
     var temporaryFolder = TemporaryFolder()
 
     private lateinit var project: Project
-    private val password = "PASSWORD"
 
     @Before
     fun before() {
-        project = ProjectBuilder.builder()
-            .withName("test")
-            .withProjectDir(temporaryFolder.root)
-            .build()
+        project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
+    }
+
+    @Test
+    fun testProvider() {
+        val result = PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()),
+            Callable { password.toCharArray() })
+        Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
     @Test
     fun testEnvironment() {
         val result = PasswordReader.getPassword(project.logger, project,
-            TestEnvironment(mapOf(PasswordReader.ENVIRONMENT_KEY to password)))
+            TestEnvironment(mapOf(PasswordReader.ENVIRONMENT_KEY to password)), null)
         Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
@@ -41,12 +49,12 @@ class PasswordReaderTest {
         FileOutputStream(temporaryFolder.newFile(PasswordReader.LOCAL_PROPERTIES_FILE)).use { stream ->
             properties.store(stream, null)
         }
-        val result = PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()))
+        val result = PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), null)
         Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
     @Test(expected = IllegalStateException::class)
     fun testEmpty() {
-        PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()))
+        PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), null)
     }
 }

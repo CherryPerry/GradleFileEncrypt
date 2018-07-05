@@ -5,13 +5,15 @@ import org.gradle.api.Project
 
 open class FileEncryptPlugin : Plugin<Project> {
 
+    companion object {
+        const val EXTENSION_NAME = "gradleFileEncrypt"
+        const val TASK_ENCRYPT_NAME = "encryptFiles"
+        const val TASK_DECRYPT_NAME = "decryptFiles"
+    }
+
     override fun apply(project: Project) {
-        val extension = project.extensions.create("gradleFileEncrypt", FileEncryptPluginExtension::class.java, project)
-        project.tasks.create("encryptFiles", EncryptTask::class.java) {
-            it.files.set(extension.files)
-        }
-        project.tasks.create("decryptFiles", DecryptTask::class.java) {
-            it.files.set(extension.files)
-        }
+        project.extensions.create(EXTENSION_NAME, FileEncryptPluginExtension::class.java)
+        project.tasks.create(TASK_ENCRYPT_NAME, EncryptTask::class.java)
+        project.tasks.create(TASK_DECRYPT_NAME, DecryptTask::class.java)
     }
 }

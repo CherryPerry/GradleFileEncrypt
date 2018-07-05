@@ -4,6 +4,7 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import java.io.FileInputStream
 import java.util.Properties
+import java.util.concurrent.Callable
 
 object PasswordReader {
 
@@ -11,7 +12,9 @@ object PasswordReader {
     const val LOCAL_PROPERTIES_KEY = "gfe.password"
     const val ENVIRONMENT_KEY = "GFE_PASSWORD"
 
-    fun getPassword(logger: Logger?, project: Project, environment: Environment): CharArray {
+    fun getPassword(logger: Logger?, project: Project, environment: Environment, provider: Callable<CharArray>?): CharArray {
+        // provider
+        provider?.apply { return call() }
         // local.properties file
         readProperties(project)?.let {
             logger?.warn("$LOCAL_PROPERTIES_FILE is used for password")

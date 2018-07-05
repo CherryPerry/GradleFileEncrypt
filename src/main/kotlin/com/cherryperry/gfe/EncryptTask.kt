@@ -1,7 +1,9 @@
 package com.cherryperry.gfe
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputFiles
+import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.io.FileInputStream
@@ -12,8 +14,17 @@ import javax.crypto.CipherOutputStream
 
 open class EncryptTask : DefaultTask() {
 
-    @get:Input
-    open val files = project.objects.listProperty(File::class.java)!!
+    private val fileEncryptPluginExtension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
+    private val environment: Environment = SystemEnvironment
+
+    @get:SkipWhenEmpty
+    @get:InputFiles
+    val plainFiles: Iterable<File>
+        get() = project.files(fileEncryptPluginExtension.files)
+
+    @get:OutputFiles
+    val encryptedFiles: Iterable<File>
+        get() = plainFiles.map { FileNameTransformer.encryptedFileFromFile(it) }
 
     init {
         group = GROUP_NAME
@@ -21,26 +32,26 @@ open class EncryptTask : DefaultTask() {
     }
 
     @TaskAction
-    open fun encrypt() {
-        val password = PasswordReader.getPassword(logger, project, SystemEnvironment)
+    fun encrypt() {
+        val password = PasswordReader.getPassword(logger, project, environment,
+            fileEncryptPluginExtension.passwordProvider)
         val key = generateKey(password)
         password.fill(' ')
-        files.get().forEach { relativeFile ->
-            val file = project.file(relativeFile)
-            logger.warn("Full path $relativeFile")
-            encryptFile(file, key)
+        plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
+            logger.info("Encrypting file ${plainFile.absolutePath}")
+            val result = encryptFile(plainFile, encryptedFile, key)
+            result?.let { logger.info("Encrypted file: ${encryptedFile.absolutePath}") }
         }
     }
 
-    open fun encryptFile(file: File, key: Key): File? {
-        if (!file.exists() || !file.canRead()) {
-            logger.error("${file.name} does not exist of can't be read")
+    private fun encryptFile(inputFile: File, outputFile: File, key: Key): File? {
+        if (!inputFile.exists() || !inputFile.canRead()) {
+            logger.error("${inputFile.name} does not exist or can't be read")
             return null
         }
-        val encryptedFile = File(file.parentFile, "${file.name}.encrypted")
-        val iv = if (encryptedFile.exists() && encryptedFile.canRead()) {
+        val iv = if (outputFile.exists() && outputFile.canRead()) {
             // if encrypted file already exists - reuse it's IV
-            FileInputStream(encryptedFile).use { fileInputStream ->
+            FileInputStream(outputFile).use { fileInputStream ->
                 val ivSize = fileInputStream.read()
                 val iv = ByteArray(ivSize)
                 fileInputStream.read(iv)
@@ -50,15 +61,15 @@ open class EncryptTask : DefaultTask() {
             generateIv()
         }
         val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
-        logger.warn("Encrypted full path $encryptedFile")
-        FileInputStream(file).use { fileInputStream ->
-            val fileOutputStream = FileOutputStream(encryptedFile)
-            fileOutputStream.write(cipher.iv.size)
-            fileOutputStream.write(cipher.iv)
-            CipherOutputStream(fileOutputStream, cipher).use { cipherOutputStream ->
-                fileInputStream.copyTo(cipherOutputStream, BUFFER_SIZE)
+        FileInputStream(inputFile).use { fileInputStream ->
+            FileOutputStream(outputFile).use { fileOutputStream ->
+                fileOutputStream.write(cipher.iv.size)
+                fileOutputStream.write(cipher.iv)
+                CipherOutputStream(fileOutputStream, cipher).use { cipherOutputStream ->
+                    fileInputStream.copyTo(cipherOutputStream, BUFFER_SIZE)
+                }
             }
         }
-        return encryptedFile
+        return outputFile
     }
 }
