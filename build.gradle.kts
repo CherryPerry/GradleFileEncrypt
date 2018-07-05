@@ -19,40 +19,8 @@ plugins {
     id("com.gradle.plugin-publish") version "0.9.10"
 }
 
-fun getHeadCommitSHA1Short(logger: Logger): String? {
-    val gitDir = project.file(".git")
-    if (!gitDir.exists() || !gitDir.isDirectory || !gitDir.canRead()) {
-        logger.error(".git directory does not exist")
-        return null
-    }
-    val headFile = File(gitDir, "HEAD")
-    if (!headFile.exists() || !headFile.isFile || !headFile.canRead()) {
-        logger.error("HEAD does not exist")
-        return null
-    }
-    val headContent = headFile.readText(Charsets.UTF_8)
-    if (headContent.contains(':')) {
-        logger.warn("HEAD is branch")
-        val refFile = File(gitDir, headContent.split(':')[1].trim())
-        if (!refFile.exists() || !refFile.isFile || !refFile.canRead()) {
-            logger.warn("Failed to find HEAD's branch")
-            return null
-        }
-        return refFile.readText(Charsets.UTF_8).trim().take(7)
-    } else {
-        logger.warn("HEAD is single commit")
-        return headContent.trim().take(7)
-    }
-}
-
-val currentCommit = getHeadCommitSHA1Short(logger)
-logger.warn("$currentCommit")
 group = "com.cherryperry.gfe"
-version = if (currentCommit != null) {
-    "1.0.$currentCommit"
-} else {
-    throw IllegalStateException("Failed to resolve commit based version")
-}
+version = "1.1.0"
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8

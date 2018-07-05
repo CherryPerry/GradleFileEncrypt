@@ -11,3 +11,16 @@ cache:
 deploy:
   provider: script
   script: ./gradlew publishPlugins -Pgradle.publish.key=$GRADLE_PLUGIN_KEY -Pgradle.publish.secret=$GRADLE_PLUGIN_SECRET
+  skip_cleanup: true
+  on:
+    tags: true
+deploy:
+  provider: releases
+  api_key: $GITHUB_API_KEY
+  file:
+    - "build/libs/gradle-file-encrypt-1.1.0.jar"
+    - "build/libs/gradle-file-encrypt-1.1.0-javadoc.jar"
+    - "build/libs/gradle-file-encrypt-1.1.0-sources.jar"
+  skip_cleanup: true
+  on:
+    tags: true
