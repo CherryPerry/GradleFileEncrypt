@@ -30,7 +30,7 @@ or as `GFE_PASSWORD` environment variable (or skip this step)
     ```groovy
     plugins {
       // check latest version on https://plugins.gradle.org/plugin/com.cherryperry.gradle-file-encrypt
-      id 'com.cherryperry.gradle-file-encrypt" version "1.1.0'
+      id 'com.cherryperry.gradle-file-encrypt' version '1.1.0'
     }
     gradleFileEncrypt {
         files 'signing.properties', 'app/google-services.json'
