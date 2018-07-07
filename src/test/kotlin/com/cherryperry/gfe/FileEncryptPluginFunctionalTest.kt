@@ -166,6 +166,8 @@ class FileEncryptPluginFunctionalTest(
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         testFile.writeText(CONTENT_1)
+        // wait for timestamp change
+        Thread.sleep(100)
         // generate again
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
