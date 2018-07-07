@@ -160,12 +160,7 @@ class FileEncryptPluginFunctionalTest(
         val data = resultFile.readBytes()
         val lastModified = resultFile.lastModified()
         // reset cache
-        // TODO Other cache invalidating, it may produce error in future
-        testFile.delete()
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
-            Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
-        }
-        testFile.writeText(CONTENT_1)
+        resultFile.writeBytes(data.copyOf(data.size - 1))
         // wait for timestamp change
         Thread.sleep(100)
         // generate again
