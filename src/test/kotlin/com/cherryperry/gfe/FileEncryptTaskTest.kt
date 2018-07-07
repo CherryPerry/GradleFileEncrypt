@@ -7,11 +7,9 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.concurrent.Callable
 
-class TaskTest {
+class FileEncryptTaskTest {
 
     companion object {
         private const val CONTENT = "Super secret information"
@@ -30,7 +28,7 @@ class TaskTest {
     @Before
     fun before() {
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
-        project.pluginManager.apply("com.cherryperry.gradle-file-encrypt")
+        project.pluginManager.apply(PLUGIN_NAME)
         extension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
         extension.passwordProvider = Callable { PASSWORD.toCharArray() }
         encryptTask = project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask
@@ -101,29 +99,5 @@ class TaskTest {
         Assert.assertEquals(2, outputs.size)
         Assert.assertTrue(outputs[0].endsWith("1.txt"))
         Assert.assertTrue(outputs[1].endsWith("2.txt"))
-    }
-
-    @Test
-    fun testEncryptionAndDecryption() {
-        val file = temporaryFolder.newFile()
-        FileOutputStream(file).use { it.writer(Charsets.UTF_8).use { it.write(CONTENT) } }
-        extension.files = arrayOf(file)
-        encryptTask.encrypt()
-        file.delete()
-        decryptTask.decrypt()
-        val content = FileInputStream(file).use { it.reader(Charsets.UTF_8).use { it.readText() } }
-        Assert.assertEquals(CONTENT, content)
-    }
-
-    @Test
-    fun testEncryptionSameIv() {
-        val file = temporaryFolder.newFile()
-        FileOutputStream(file).use { it.writer(Charsets.UTF_8).use { it.write(CONTENT) } }
-        extension.files = arrayOf(file)
-        encryptTask.encrypt()
-        val originalBytes = encryptTask.encryptedFiles.toList()[0].readBytes()
-        encryptTask.encrypt()
-        val newBytes = encryptTask.encryptedFiles.toList()[0].readBytes()
-        Assert.assertArrayEquals(originalBytes, newBytes)
     }
 }

@@ -9,11 +9,11 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
-const val BUFFER_SIZE = 8 * 1024
 const val ITERATIONS = 10_000
 const val KEY_LENGTH_BYTES = 16
 const val KEY_LENGTH = KEY_LENGTH_BYTES * 8
 const val GROUP_NAME = "encryption"
+const val PLUGIN_NAME = "com.cherryperry.gradle-file-encrypt"
 
 fun generateKey(password: CharArray): SecretKey {
     val keySpec = PBEKeySpec(password, "salt".toByteArray(Charsets.UTF_8), ITERATIONS, KEY_LENGTH)

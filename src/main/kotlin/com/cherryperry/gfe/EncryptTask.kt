@@ -6,8 +6,6 @@ import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
@@ -51,7 +49,7 @@ open class EncryptTask : DefaultTask() {
         }
         val iv = if (outputFile.exists() && outputFile.canRead()) {
             // if encrypted file already exists - reuse it's IV
-            FileInputStream(outputFile).use { fileInputStream ->
+            outputFile.inputStream().use { fileInputStream ->
                 val ivSize = fileInputStream.read()
                 val iv = ByteArray(ivSize)
                 fileInputStream.read(iv)
@@ -61,12 +59,12 @@ open class EncryptTask : DefaultTask() {
             generateIv()
         }
         val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
-        FileInputStream(inputFile).use { fileInputStream ->
-            FileOutputStream(outputFile).use { fileOutputStream ->
+        inputFile.inputStream().use { fileInputStream ->
+            outputFile.outputStream().use { fileOutputStream ->
                 fileOutputStream.write(cipher.iv.size)
                 fileOutputStream.write(cipher.iv)
                 CipherOutputStream(fileOutputStream, cipher).use { cipherOutputStream ->
-                    fileInputStream.copyTo(cipherOutputStream, BUFFER_SIZE)
+                    fileInputStream.copyTo(cipherOutputStream)
                 }
             }
         }

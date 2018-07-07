@@ -6,8 +6,6 @@ import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
@@ -49,14 +47,14 @@ open class DecryptTask : DefaultTask() {
             logger.error("${inputFile.name} does not exist or can't be read")
             return null
         }
-        val fileInputStream = FileInputStream(inputFile)
+        val fileInputStream = inputFile.inputStream()
         val ivSize = fileInputStream.read()
         val iv = ByteArray(ivSize)
         fileInputStream.read(iv)
         val cipher = createCipher(Cipher.DECRYPT_MODE, key, iv)
         CipherInputStream(fileInputStream, cipher).use { cipherInputStream ->
-            FileOutputStream(outputFile).use { fileOutputStream ->
-                cipherInputStream.copyTo(fileOutputStream, BUFFER_SIZE)
+            outputFile.outputStream().use { fileOutputStream ->
+                cipherInputStream.copyTo(fileOutputStream)
             }
         }
         return inputFile

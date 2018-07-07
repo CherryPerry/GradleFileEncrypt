@@ -10,7 +10,6 @@ buildscript {
 }
 
 plugins {
-    java
     kotlin("jvm") version "1.2.50"
     id("java-gradle-plugin")
     id("org.jmailen.kotlinter") version "1.14.0"
@@ -58,7 +57,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly(gradleApi())
     compileOnly(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("stdlib-jdk8"))
     testImplementation("junit", "junit", "4.12")
+    testImplementation(gradleTestKit())
 }
