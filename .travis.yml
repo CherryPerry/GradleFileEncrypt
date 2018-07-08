@@ -8,9 +8,10 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
+install:
+  - ./gradlew assemble --info --console=plain --stacktrace
 script:
-  - ./gradlew assemble --info
-  - ./gradlew check --info
+  - ./gradlew check --info --console=plain --stacktrace
 deploy:
   provider: script
   script: ./gradlew publishPlugins -Pgradle.publish.key=$GRADLE_PLUGIN_KEY -Pgradle.publish.secret=$GRADLE_PLUGIN_SECRET
