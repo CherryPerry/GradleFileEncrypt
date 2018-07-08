@@ -33,6 +33,7 @@ detekt {
     defaultProfile(Action {
         config = file("detekt.yml")
         input = "src/main/kotlin;src/test/kotlin"
+        filters = "do-not-use-it"
     })
 }
 
