@@ -1,16 +1,23 @@
 package com.cherryperry.gfe
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
+import org.gradle.workers.IsolationMode
+import org.gradle.workers.WorkerExecutor
 import java.io.File
-import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.CipherInputStream
+import javax.crypto.SecretKey
+import javax.inject.Inject
 
-open class DecryptTask : DefaultTask() {
+open class DecryptTask @Inject constructor(
+    private val workerExecutor: WorkerExecutor
+) : DefaultTask() {
 
     private val fileEncryptPluginExtension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
     private val environment: Environment = SystemEnvironment
@@ -36,27 +43,38 @@ open class DecryptTask : DefaultTask() {
         val key = generateKey(password)
         password.fill(' ')
         plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
-            logger.info("Decrypting file ${encryptedFile.absolutePath}")
-            val result = decryptFile(encryptedFile, plainFile, key)
-            result?.let { logger.info("Decrypted file: ${plainFile.absolutePath}") }
+            workerExecutor.submit(DecryptTaskRunnable::class.java) { config ->
+                config.isolationMode = IsolationMode.NONE
+                config.params(key, encryptedFile, plainFile)
+            }
         }
     }
 
-    private fun decryptFile(inputFile: File, outputFile: File, key: Key): File? {
-        if (!inputFile.exists() || !inputFile.canRead()) {
-            logger.error("${inputFile.name} does not exist or can't be read")
-            return null
-        }
-        val fileInputStream = inputFile.inputStream()
-        val ivSize = fileInputStream.read()
-        val iv = ByteArray(ivSize)
-        fileInputStream.read(iv)
-        val cipher = createCipher(Cipher.DECRYPT_MODE, key, iv)
-        CipherInputStream(fileInputStream, cipher).use { cipherInputStream ->
-            outputFile.outputStream().use { fileOutputStream ->
-                cipherInputStream.copyTo(fileOutputStream)
+    class DecryptTaskRunnable @Inject constructor(
+        private val key: SecretKey,
+        private val encryptedFile: File,
+        private val plainFile: File
+    ) : Runnable {
+
+        private val logger: Logger = Logging.getLogger(DecryptTaskRunnable::class.java)
+
+        override fun run() {
+            logger.info("Decrypting file: ${encryptedFile.absolutePath}")
+            if (!encryptedFile.exists() || !encryptedFile.canRead()) {
+                logger.error("${encryptedFile.name} does not exist or can't be read")
+                return
             }
+            val fileInputStream = encryptedFile.inputStream()
+            val ivSize = fileInputStream.read()
+            val iv = ByteArray(ivSize)
+            fileInputStream.read(iv)
+            val cipher = createCipher(Cipher.DECRYPT_MODE, key, iv)
+            CipherInputStream(fileInputStream, cipher).use { cipherInputStream ->
+                plainFile.outputStream().use { fileOutputStream ->
+                    cipherInputStream.copyTo(fileOutputStream)
+                }
+            }
+            logger.info("Decrypted file: ${plainFile.absolutePath}")
         }
-        return inputFile
     }
 }

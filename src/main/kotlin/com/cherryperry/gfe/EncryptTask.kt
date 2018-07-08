@@ -1,16 +1,23 @@
 package com.cherryperry.gfe
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
+import org.gradle.workers.IsolationMode
+import org.gradle.workers.WorkerExecutor
 import java.io.File
-import java.security.Key
 import javax.crypto.Cipher
 import javax.crypto.CipherOutputStream
+import javax.crypto.SecretKey
+import javax.inject.Inject
 
-open class EncryptTask : DefaultTask() {
+open class EncryptTask @Inject constructor(
+    private val workerExecutor: WorkerExecutor
+) : DefaultTask() {
 
     private val fileEncryptPluginExtension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
     private val environment: Environment = SystemEnvironment
@@ -36,38 +43,50 @@ open class EncryptTask : DefaultTask() {
         val key = generateKey(password)
         password.fill(' ')
         plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
-            logger.info("Encrypting file ${plainFile.absolutePath}")
-            val result = encryptFile(plainFile, encryptedFile, key)
-            result?.let { logger.info("Encrypted file: ${encryptedFile.absolutePath}") }
+            workerExecutor.submit(EncryptTaskRunnable::class.java) { config ->
+                config.isolationMode = IsolationMode.NONE
+                config.params(key, plainFile, encryptedFile)
+            }
         }
     }
 
-    private fun encryptFile(inputFile: File, outputFile: File, key: Key): File? {
-        if (!inputFile.exists() || !inputFile.canRead()) {
-            logger.error("${inputFile.name} does not exist or can't be read")
-            return null
-        }
-        val iv = if (outputFile.exists() && outputFile.canRead()) {
-            // if encrypted file already exists - reuse it's IV
-            outputFile.inputStream().use { fileInputStream ->
-                val ivSize = fileInputStream.read()
-                val iv = ByteArray(ivSize)
-                fileInputStream.read(iv)
-                iv
+    class EncryptTaskRunnable @Inject constructor(
+        private val key: SecretKey,
+        private val plainFile: File,
+        private val encryptedFile: File
+    ) : Runnable {
+
+        private val logger: Logger = Logging.getLogger(DecryptTask.DecryptTaskRunnable::class.java)
+
+        override fun run() {
+            logger.info("Encrypting file: ${plainFile.absolutePath}")
+            if (!plainFile.exists() || !plainFile.canRead()) {
+                logger.error("${plainFile.name} does not exist or can't be read")
+                return
             }
-        } else {
-            generateIv()
-        }
-        val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
-        inputFile.inputStream().use { fileInputStream ->
-            outputFile.outputStream().use { fileOutputStream ->
-                fileOutputStream.write(cipher.iv.size)
-                fileOutputStream.write(cipher.iv)
-                CipherOutputStream(fileOutputStream, cipher).use { cipherOutputStream ->
-                    fileInputStream.copyTo(cipherOutputStream)
+            val iv = if (encryptedFile.exists() && encryptedFile.canRead()) {
+                // if encrypted file already exists - reuse it's IV
+                logger.info("Encrypted file already exists, reuse it's IV")
+                encryptedFile.inputStream().use { fileInputStream ->
+                    val ivSize = fileInputStream.read()
+                    val iv = ByteArray(ivSize)
+                    fileInputStream.read(iv)
+                    iv
+                }
+            } else {
+                generateIv()
+            }
+            val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
+            plainFile.inputStream().use { fileInputStream ->
+                encryptedFile.outputStream().use { fileOutputStream ->
+                    fileOutputStream.write(cipher.iv.size)
+                    fileOutputStream.write(cipher.iv)
+                    CipherOutputStream(fileOutputStream, cipher).use { cipherOutputStream ->
+                        fileInputStream.copyTo(cipherOutputStream)
+                    }
                 }
             }
+            logger.info("Encrypted file: ${encryptedFile.absolutePath}")
         }
-        return outputFile
     }
 }
