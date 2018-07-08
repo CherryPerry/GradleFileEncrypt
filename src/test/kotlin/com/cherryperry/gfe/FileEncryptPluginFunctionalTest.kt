@@ -158,17 +158,12 @@ class FileEncryptPluginFunctionalTest(
         }
         val resultFile = FileNameTransformer.encryptedFileFromFile(testFile)
         val data = resultFile.readBytes()
-        val lastModified = resultFile.lastModified()
-        // reset cache
+        // change output file to invalidate cache
         resultFile.writeBytes(data.copyOf(data.size - 1))
-        // wait for timestamp change
-        Thread.sleep(100)
         // generate again
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
-        // last modified must change and content not
-        Assert.assertNotEquals(lastModified, resultFile.lastModified())
         Assert.assertArrayEquals(data, resultFile.readBytes())
     }
 

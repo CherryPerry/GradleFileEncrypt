@@ -30,8 +30,9 @@ tasks.withType<KotlinCompile> {
 }
 
 detekt {
-    profile("main", Action {
+    defaultProfile(Action {
         config = file("detekt.yml")
+        input = "src/main/kotlin;src/test/kotlin"
     })
 }
 
