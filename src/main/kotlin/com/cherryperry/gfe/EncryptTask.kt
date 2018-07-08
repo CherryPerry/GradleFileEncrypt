@@ -56,7 +56,7 @@ open class EncryptTask @Inject constructor(
         private val encryptedFile: File
     ) : Runnable {
 
-        private val logger: Logger = Logging.getLogger(DecryptTask.DecryptTaskRunnable::class.java)
+        private val logger: Logger = Logging.getLogger(EncryptTaskRunnable::class.java)
 
         override fun run() {
             logger.info("Encrypting file: ${plainFile.absolutePath}")
