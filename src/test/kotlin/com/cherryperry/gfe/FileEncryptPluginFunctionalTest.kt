@@ -22,6 +22,8 @@ class FileEncryptPluginFunctionalTest(
         const val CONTENT_1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         const val CONTENT_2 = "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
         const val PASSWORD = "password"
+        const val FILE_BUILD_GRADLE = "build.gradle"
+        const val FILE_GRADLE_PROPERTIES = "gradle.properties"
 
         // test all supported gradle versions
         @JvmStatic
@@ -46,8 +48,14 @@ class FileEncryptPluginFunctionalTest(
         buildGradleContent: String = EMPTY_BUILD_GRADLE,
         vararg args: String
     ): BuildResult {
-        val buildGradle = File(temporaryFolder.root, "build.gradle")
+        val buildGradle = File(temporaryFolder.root, FILE_BUILD_GRADLE)
         buildGradle.writeText(buildGradleContent)
+        val gradleProperties = File(temporaryFolder.root, FILE_GRADLE_PROPERTIES)
+        javaClass.classLoader.getResourceAsStream(FILE_GRADLE_PROPERTIES).use { inputStream ->
+            gradleProperties.outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
         return GradleRunner.create()
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
