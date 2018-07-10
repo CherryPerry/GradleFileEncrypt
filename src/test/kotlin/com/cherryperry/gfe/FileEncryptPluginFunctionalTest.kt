@@ -22,6 +22,7 @@ class FileEncryptPluginFunctionalTest(
         const val CONTENT_1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         const val CONTENT_2 = "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
         const val PASSWORD = "password"
+        const val PASSWORD_2 = "password2"
         const val FILE_BUILD_GRADLE = "build.gradle"
         const val FILE_GRADLE_PROPERTIES = "gradle.properties"
 
@@ -66,14 +67,14 @@ class FileEncryptPluginFunctionalTest(
             .build()
     }
 
-    private fun buildGradleConfigurationWithFiles(vararg args: File): String {
+    private fun buildGradleConfigurationWithFiles(password: String, vararg args: File): String {
         val files = args.joinToString(transform = { "'${it.relativeTo(temporaryFolder.root)}'" })
         return """
             $EMPTY_BUILD_GRADLE
             gradleFileEncrypt
             {
                 files $files
-                passwordProvider { return '$PASSWORD'.toCharArray() }
+                passwordProvider { return '$password'.toCharArray() }
             }
         """.trimIndent()
     }
@@ -99,11 +100,11 @@ class FileEncryptPluginFunctionalTest(
         // test tasks work as expected
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         testFile.delete()
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
         Assert.assertEquals(CONTENT_1, testFile.readText())
@@ -114,18 +115,18 @@ class FileEncryptPluginFunctionalTest(
         // test gradle task cache support without file changes
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         // second call should be skipped due cache
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.UP_TO_DATE, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
         // second call should be skipped due cache
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.UP_TO_DATE, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
     }
@@ -135,22 +136,22 @@ class FileEncryptPluginFunctionalTest(
         // test gradle task cache support with file changes
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         // invalidate encryption source
         testFile.writeText(CONTENT_2)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         testFile.delete()
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
         Assert.assertEquals(CONTENT_2, testFile.readText())
         // invalidate decryption result
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
         Assert.assertEquals(CONTENT_2, testFile.readText())
@@ -161,7 +162,7 @@ class FileEncryptPluginFunctionalTest(
         // 2 passes of encryption task should produce same result
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         val resultFile = FileNameTransformer.encryptedFileFromFile(testFile)
@@ -169,7 +170,7 @@ class FileEncryptPluginFunctionalTest(
         // change output file to invalidate cache
         resultFile.writeBytes(data.copyOf(data.size - 1))
         // generate again
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         Assert.assertArrayEquals(data, resultFile.readBytes())
@@ -180,7 +181,7 @@ class FileEncryptPluginFunctionalTest(
         // encrypt task must use same iv, if encryption target exists
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         val resultFile = FileNameTransformer.encryptedFileFromFile(testFile)
@@ -190,7 +191,7 @@ class FileEncryptPluginFunctionalTest(
             array
         }
         testFile.writeText(CONTENT_2)
-        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         val fileStart2 = resultFile.inputStream().use {
@@ -199,6 +200,23 @@ class FileEncryptPluginFunctionalTest(
             array
         }
         Assert.assertArrayEquals(fileStart1, fileStart2)
+    }
+
+    @Test
+    fun testPasswordChangeInvalidateTask() {
+        val testFile = temporaryFolder.newFile()
+        testFile.writeText(CONTENT_1)
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+            Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
+        }
+        // change password and run again
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD_2, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+            Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
+        }
+        // do not change password and check cache
+        createRunner(buildGradleConfigurationWithFiles(PASSWORD_2, testFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+            Assert.assertEquals(TaskOutcome.UP_TO_DATE, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
+        }
     }
 
     operator fun BuildResult.get(taskName: String): BuildTask = task(":$taskName")!!

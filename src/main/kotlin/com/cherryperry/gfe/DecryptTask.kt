@@ -1,6 +1,5 @@
 package com.cherryperry.gfe
 
-import org.gradle.api.DefaultTask
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.InputFiles
@@ -17,10 +16,7 @@ import javax.inject.Inject
 
 open class DecryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
-) : DefaultTask() {
-
-    private val fileEncryptPluginExtension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
-    private val environment: Environment = SystemEnvironment
+) : BaseTask() {
 
     @get:SkipWhenEmpty
     @get:InputFiles
@@ -32,16 +28,11 @@ open class DecryptTask @Inject constructor(
         get() = project.files(fileEncryptPluginExtension.files)
 
     init {
-        group = GROUP_NAME
         description = "Decrypts all encrypted files from configuration if they exist"
     }
 
     @TaskAction
     fun decrypt() {
-        val password = PasswordReader.getPassword(logger, project, environment,
-            fileEncryptPluginExtension.passwordProvider)
-        val key = generateKey(password)
-        password.fill(' ')
         plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
             workerExecutor.submit(DecryptTaskRunnable::class.java) { config ->
                 config.isolationMode = IsolationMode.NONE
