@@ -44,11 +44,28 @@ You can create your own password provider via `passwordProvider`.
 gradleFileEncrypt {
     // files to encrypt
     files 'signing.properties', 'app/google-services.json'
+    // (optional) setup file mapping
+    mapping = [ 'signing.properties' : 'secret/signing.properties' ]
     // (optional) setup password provider
     // if provided one is not secure enough for you
     passwordProvider { return 'YOUR LOGIC HERE'.toCharArray() }
 }
 ```
+
+#### File mapping
+Sometimes you need to save your encrypted files in another directory. 
+You can configure that behavior with `mapping` configuration. 
+It is simple `Map<Object, Object>`, where key is original file
+and value is target file without encrypted extension.
+```groovy
+gradleFileEncrypt {
+    files 'src/main/resources/secure.properties'
+    mapping = ['src/main/resources/secure.properties':'secure/keys']
+}
+```
+Encrypted file `secure.properties.encrypted` will be bundled with app without `mapping`,
+because it is inside resources folder. To avoid this behavior `mapping` was provided,
+so `secure/keys.encrypted` file will be encrypted version of `src/main/resources/secure.properties`.
 
 ### Encryption and decryption
 

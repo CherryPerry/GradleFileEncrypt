@@ -18,14 +18,11 @@ open class DecryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
 ) : BaseTask() {
 
-    @get:SkipWhenEmpty
-    @get:InputFiles
-    val encryptedFiles: Iterable<File>
-        get() = plainFiles.map { FileNameTransformer.encryptedFileFromFile(it) }
+    public override val encryptedFiles: Iterable<File>
+        @InputFiles @SkipWhenEmpty get() = super.encryptedFiles
 
-    @get:OutputFiles
-    val plainFiles: Iterable<File>
-        get() = project.files(fileEncryptPluginExtension.files)
+    public override val plainFiles: Iterable<File>
+        @OutputFiles get() = super.plainFiles
 
     init {
         description = "Decrypts all encrypted files from configuration if they exist"
@@ -61,6 +58,7 @@ open class DecryptTask @Inject constructor(
             fileInputStream.read(iv)
             val cipher = createCipher(Cipher.DECRYPT_MODE, key, iv)
             CipherInputStream(fileInputStream, cipher).use { cipherInputStream ->
+                plainFile.parentFile.mkdirs()
                 plainFile.outputStream().use { fileOutputStream ->
                     cipherInputStream.copyTo(fileOutputStream)
                 }

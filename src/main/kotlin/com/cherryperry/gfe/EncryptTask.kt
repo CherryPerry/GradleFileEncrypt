@@ -18,14 +18,11 @@ open class EncryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
 ) : BaseTask() {
 
-    @get:SkipWhenEmpty
-    @get:InputFiles
-    val plainFiles: Iterable<File>
-        get() = project.files(fileEncryptPluginExtension.files)
+    public override val plainFiles: Iterable<File>
+        @InputFiles @SkipWhenEmpty get() = super.plainFiles
 
-    @get:OutputFiles
-    val encryptedFiles: Iterable<File>
-        get() = plainFiles.map { FileNameTransformer.encryptedFileFromFile(it) }
+    public override val encryptedFiles: Iterable<File>
+        @OutputFiles get() = super.encryptedFiles
 
     init {
         description = "Encrypts all unencrypted files from configuration if they exist"
@@ -69,6 +66,7 @@ open class EncryptTask @Inject constructor(
             }
             val cipher = createCipher(Cipher.ENCRYPT_MODE, key, iv)
             plainFile.inputStream().use { fileInputStream ->
+                encryptedFile.parentFile.mkdirs()
                 encryptedFile.outputStream().use { fileOutputStream ->
                     fileOutputStream.write(cipher.iv.size)
                     fileOutputStream.write(cipher.iv)

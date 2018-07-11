@@ -9,10 +9,12 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.util.concurrent.Callable
 
-class FileEncryptTaskTest {
+/**
+ * Test valid configuration of input and output properties of task.
+ */
+class FileEncryptTaskConfigurationTest {
 
     companion object {
-        private const val CONTENT = "Super secret information"
         private const val PASSWORD = "password"
     }
 
@@ -69,6 +71,20 @@ class FileEncryptTaskTest {
     }
 
     @Test
+    fun testEncryptTaskConfigurationMapping() {
+        extension.files = arrayOf("1.txt", "2.txt")
+        extension.mapping = mapOf("2.txt" to "3.txt")
+        val inputs = encryptTask.plainFiles.toList()
+        Assert.assertEquals(2, inputs.size)
+        Assert.assertTrue(inputs[0].endsWith("1.txt"))
+        Assert.assertTrue(inputs[1].endsWith("2.txt"))
+        val outputs = encryptTask.encryptedFiles.toList()
+        Assert.assertEquals(2, outputs.size)
+        Assert.assertTrue(outputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))
+        Assert.assertTrue(outputs[1].endsWith("3.txt.${FileNameTransformer.EXTENSION}"))
+    }
+
+    @Test
     fun testDecryptTaskConfigurationEmpty() {
         extension.files = emptyArray()
         val inputs = decryptTask.encryptedFiles.toList()
@@ -95,6 +111,20 @@ class FileEncryptTaskTest {
         Assert.assertEquals(2, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))
         Assert.assertTrue(inputs[1].endsWith("2.txt.${FileNameTransformer.EXTENSION}"))
+        val outputs = encryptTask.plainFiles.toList()
+        Assert.assertEquals(2, outputs.size)
+        Assert.assertTrue(outputs[0].endsWith("1.txt"))
+        Assert.assertTrue(outputs[1].endsWith("2.txt"))
+    }
+
+    @Test
+    fun testDecryptTaskConfigurationMapping() {
+        extension.files = arrayOf("1.txt", "2.txt")
+        extension.mapping = mapOf("2.txt" to "3.txt")
+        val inputs = encryptTask.encryptedFiles.toList()
+        Assert.assertEquals(2, inputs.size)
+        Assert.assertTrue(inputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))
+        Assert.assertTrue(inputs[1].endsWith("3.txt.${FileNameTransformer.EXTENSION}"))
         val outputs = encryptTask.plainFiles.toList()
         Assert.assertEquals(2, outputs.size)
         Assert.assertTrue(outputs[0].endsWith("1.txt"))
