@@ -19,7 +19,7 @@ plugins {
 }
 
 group = "com.cherryperry.gfe"
-version = "1.1.0"
+version = "1.2.0"
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
