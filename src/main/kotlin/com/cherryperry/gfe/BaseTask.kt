@@ -11,9 +11,9 @@ import javax.crypto.SecretKey
  */
 abstract class BaseTask : DefaultTask() {
 
-    protected val fileEncryptPluginExtension: FileEncryptPluginExtension =
+    private val fileEncryptPluginExtension: FileEncryptPluginExtension =
         project.extensions.getByType(FileEncryptPluginExtension::class.java)
-    protected val environment: Environment = SystemEnvironment
+    private val environment: Environment = SystemEnvironment
 
     @get:Input
     val key: SecretKey
