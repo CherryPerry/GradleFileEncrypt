@@ -12,10 +12,10 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.2.51"
     id("java-gradle-plugin")
-    id("org.jmailen.kotlinter") version "1.14.0"
+    id("org.jmailen.kotlinter") version "1.15.0"
     id("com.github.ben-manes.versions") version "0.20.0"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC7-3"
-    id("com.gradle.plugin-publish") version "0.9.10"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC8"
+    id("com.gradle.plugin-publish") version "0.10.0"
 }
 
 group = "com.cherryperry.gfe"
@@ -37,7 +37,9 @@ detekt {
     })
 }
 
-tasks.findByName("check")?.dependsOn("detektCheck")
+tasks.named("check").configure {
+    dependsOn(tasks.named("detektCheck"))
+}
 
 pluginBundle {
     website = "https://github.com/CherryPerry/GradleFileEncrypt"
