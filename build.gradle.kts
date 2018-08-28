@@ -47,11 +47,9 @@ pluginBundle {
     description = "Simply encrypt your sensitive data in repository with password"
     tags = listOf("encryption", "cryptography")
 
-    (plugins) {
-        "gradleFileEncryptPlugin" {
-            id = "com.cherryperry.gradle-file-encrypt"
-            displayName = "Gradle file encrypt"
-        }
+    plugins.create("gradleFileEncryptPlugin") {
+        id = "com.cherryperry.gradle-file-encrypt"
+        displayName = "Gradle file encrypt"
     }
 }
 
