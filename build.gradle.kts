@@ -10,11 +10,11 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.2.61"
+    kotlin("jvm") version "1.2.70"
     id("java-gradle-plugin")
-    id("org.jmailen.kotlinter") version "1.16.0"
+    id("org.jmailen.kotlinter") version "1.17.0"
     id("com.github.ben-manes.versions") version "0.20.0"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC8"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9"
     id("com.gradle.plugin-publish") version "0.10.0"
 }
 
@@ -30,15 +30,15 @@ tasks.withType<KotlinCompile> {
 }
 
 detekt {
-    defaultProfile(Action {
-        config = file("detekt.yml")
-        input = "src/main/kotlin;src/test/kotlin"
-        filters = "do-not-use-it"
-    })
+    toolVersion = "1.0.0.RC9"
+    // TODO Add src/test/kotlin after bug fix
+    input = files("src/main/kotlin")
+    config = files("detekt.yml")
+    filters = "do-not-use-it"
 }
 
 tasks.named("check").configure {
-    dependsOn(tasks.named("detektCheck"))
+    dependsOn(tasks.named("detekt"))
 }
 
 pluginBundle {
