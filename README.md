@@ -80,3 +80,17 @@ Create plain files from encrypted files (if files already exist, they will be **
 ```bash
 ./gradlew decryptFiles
 ```
+
+### Samples
+
+You can also see sample usage in my other projects:
+
+1. [CherryPerry/Amiami-kotlin-backend](https://github.com/CherryPerry/Amiami-kotlin-backend)
+1. [CherryPerry/Amiami-android-app](https://github.com/CherryPerry/Amiami-android-app)
+
+Both projects are connected to Travis continuous integration service. Encryption password was set in
+[settings tab](https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings)
+of each repository. ```./gradlew decryptFiles``` command was added to pre-build script, so all files,
+that contains private settings required for build, are decrypted before build. Not encrypted files were added
+to ```.gitignore```, so there is no decrypted versions of them in repository, only encrypted ones.
+For local development I add password to ```local.properties``` file.
