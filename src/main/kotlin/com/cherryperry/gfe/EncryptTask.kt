@@ -6,6 +6,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.workers.IsolationMode
 import org.gradle.workers.WorkerExecutor
 import java.io.File
@@ -29,12 +30,31 @@ open class EncryptTask @Inject constructor(
     }
 
     @TaskAction
-    fun encrypt() {
-        plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
-            workerExecutor.submit(EncryptTaskRunnable::class.java) { config ->
-                config.isolationMode = IsolationMode.NONE
-                config.params(key, plainFile, encryptedFile)
+    fun encrypt(incrementalTaskInputs: IncrementalTaskInputs) {
+        if (incrementalTaskInputs.isIncremental) {
+            logger.info("Input is incremental")
+            incrementalTaskInputs.outOfDate {
+                logger.info("Out of date: ${it.file}")
+                val plainFile = it.file
+                val index = plainFiles.indexOf(plainFile)
+                val encryptedFile = encryptedFiles.asSequence().filterIndexed { i, _ -> i == index }.first()
+                enqueueEncryptionRunnable(key, plainFile, encryptedFile)
             }
+            incrementalTaskInputs.removed {
+                // Do nothing on file removal, user must delete encrypted files by himself
+            }
+        } else {
+            logger.info("Input is not incremental")
+            plainFiles.zip(encryptedFiles).forEach { (plainFile, encryptedFile) ->
+                enqueueEncryptionRunnable(key, plainFile, encryptedFile)
+            }
+        }
+    }
+
+    private fun enqueueEncryptionRunnable(key: SecretKey, plainFile: File, encryptedFile: File) {
+        workerExecutor.submit(EncryptTaskRunnable::class.java) { config ->
+            config.isolationMode = IsolationMode.NONE
+            config.params(key, plainFile, encryptedFile)
         }
     }
 
