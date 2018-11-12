@@ -1,5 +1,8 @@
 package com.cherryperry.gfe
 
+import com.cherryperry.gfe.base.BaseTask
+import com.cherryperry.gfe.base.PlainFilesAware
+import com.cherryperry.gfe.base.PlainFilesAwareDelegate
 import org.apache.tools.ant.DirectoryScanner
 import org.eclipse.jgit.ignore.IgnoreNode
 import org.gradle.api.GradleException
@@ -8,7 +11,6 @@ import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 /**
  * Task checks if encryption source files are covered by any of .gitignore files.
@@ -16,17 +18,18 @@ import java.io.File
  * There is problems with discovering git files via gradle API,
  * see [link](https://github.com/gradle/gradle/issues/2986) and [link](https://github.com/gradle/gradle/issues/1348).
  */
-open class CheckGitIgnoreTask : BaseTask() {
+open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
 
     companion object {
         const val FILE_GIT_IGNORE = ".gitignore"
     }
 
-    override val plainFiles: Iterable<File>
-        @InputFiles @SkipWhenEmpty get() = super.plainFiles
+    @get:InputFiles
+    @get:SkipWhenEmpty
+    override val plainFiles by PlainFilesAwareDelegate()
 
     @TaskAction
-    fun checkGitIgnoreFiles() {
+    open fun checkGitIgnoreFiles() {
         // we will remove every ignored plain file from this set
         val plainFiles = plainFiles.toMutableSet()
         if (plainFiles.isEmpty()) {

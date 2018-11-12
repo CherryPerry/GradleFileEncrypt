@@ -1,7 +1,15 @@
 package com.cherryperry.gfe
 
+import com.cherryperry.gfe.base.BaseTask
+import com.cherryperry.gfe.base.EncryptedFilesAware
+import com.cherryperry.gfe.base.EncryptedFilesAwareDelegate
+import com.cherryperry.gfe.base.PlainFilesAware
+import com.cherryperry.gfe.base.PlainFilesAwareDelegate
+import com.cherryperry.gfe.base.SecretKeyAware
+import com.cherryperry.gfe.base.SecretKeyAwareDelegate
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
@@ -17,20 +25,24 @@ import javax.inject.Inject
 
 open class EncryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
-) : BaseTask() {
+) : BaseTask(), SecretKeyAware, PlainFilesAware, EncryptedFilesAware {
 
-    public override val plainFiles: Iterable<File>
-        @InputFiles @SkipWhenEmpty get() = super.plainFiles
+    @get:Input
+    override val key: SecretKey by SecretKeyAwareDelegate()
 
-    public override val encryptedFiles: Iterable<File>
-        @OutputFiles get() = super.encryptedFiles
+    @get:InputFiles
+    @get:SkipWhenEmpty
+    override val plainFiles by PlainFilesAwareDelegate()
+
+    @get:OutputFiles
+    override val encryptedFiles by EncryptedFilesAwareDelegate()
 
     init {
         description = "Encrypts all unencrypted files from configuration if they exist"
     }
 
     @TaskAction
-    fun encrypt(incrementalTaskInputs: IncrementalTaskInputs) {
+    open fun encrypt(incrementalTaskInputs: IncrementalTaskInputs) {
         if (incrementalTaskInputs.isIncremental) {
             logger.info("Input is incremental")
             incrementalTaskInputs.outOfDate {
