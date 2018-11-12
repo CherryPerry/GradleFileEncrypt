@@ -12,7 +12,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.2.71"
     id("java-gradle-plugin")
-    id("org.jmailen.kotlinter") version "1.19.0"
+    id("org.jmailen.kotlinter") version "1.20.1"
     id("com.github.ben-manes.versions") version "0.20.0"
     id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9.2"
     id("com.gradle.plugin-publish") version "0.10.0"
