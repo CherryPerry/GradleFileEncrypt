@@ -20,8 +20,10 @@ class FileEncryptPluginConfigurationTest {
         // see https://docs.gradle.org/current/userguide/task_configuration_avoidance.html
         project.tasks.named(FileEncryptPlugin.TASK_ENCRYPT_NAME)
         project.tasks.named(FileEncryptPlugin.TASK_DECRYPT_NAME)
+        project.tasks.named(FileEncryptPlugin.TASK_GIT_IGNORE_NAME)
         // test tasks can be created
         Assert.assertTrue(project.tasks.findByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) is EncryptTask)
         Assert.assertTrue(project.tasks.findByName(FileEncryptPlugin.TASK_DECRYPT_NAME) is DecryptTask)
+        Assert.assertTrue(project.tasks.findByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) is CheckGitIgnoreTask)
     }
 }

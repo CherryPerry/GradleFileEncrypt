@@ -10,6 +10,7 @@ open class FileEncryptPlugin : Plugin<Project> {
         const val EXTENSION_NAME = "gradleFileEncrypt"
         const val TASK_ENCRYPT_NAME = "encryptFiles"
         const val TASK_DECRYPT_NAME = "decryptFiles"
+        const val TASK_GIT_IGNORE_NAME = "checkFilesGitIgnored"
     }
 
     override fun apply(project: Project) {
@@ -17,9 +18,11 @@ open class FileEncryptPlugin : Plugin<Project> {
         if (GradleVersion.current() >= GradleVersion.version("4.9")) {
             project.tasks.register(TASK_ENCRYPT_NAME, EncryptTask::class.java)
             project.tasks.register(TASK_DECRYPT_NAME, DecryptTask::class.java)
+            project.tasks.register(TASK_GIT_IGNORE_NAME, CheckGitIgnoreTask::class.java)
         } else {
             project.tasks.create(TASK_ENCRYPT_NAME, EncryptTask::class.java)
             project.tasks.create(TASK_DECRYPT_NAME, DecryptTask::class.java)
+            project.tasks.create(TASK_GIT_IGNORE_NAME, CheckGitIgnoreTask::class.java)
         }
     }
 }

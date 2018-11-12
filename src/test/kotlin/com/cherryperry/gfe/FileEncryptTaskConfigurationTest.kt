@@ -26,6 +26,7 @@ class FileEncryptTaskConfigurationTest {
     private lateinit var extension: FileEncryptPluginExtension
     private lateinit var encryptTask: EncryptTask
     private lateinit var decryptTask: DecryptTask
+    private lateinit var checkGitTask: CheckGitIgnoreTask
 
     @Before
     fun before() {
@@ -35,6 +36,7 @@ class FileEncryptTaskConfigurationTest {
         extension.passwordProvider = Callable { PASSWORD.toCharArray() }
         encryptTask = project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask
         decryptTask = project.tasks.getByName(FileEncryptPlugin.TASK_DECRYPT_NAME) as DecryptTask
+        checkGitTask = project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask
     }
 
     @Test
