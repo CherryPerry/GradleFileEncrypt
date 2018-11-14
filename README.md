@@ -12,7 +12,7 @@ Plugin will create encrypted copy of file with `.encrypted` extension. For examp
 
 ```groovy
 plugins {
-    id 'com.cherryperry.gradle-file-encrypt' version '1.2.0'
+    id 'com.cherryperry.gradle-file-encrypt' version '1.3.0'
 }
 ```
 
@@ -24,7 +24,7 @@ buildscript {
         maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:1.2.0'
+        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:1.3.0'
     }
 }
 
@@ -80,6 +80,20 @@ Create plain files from encrypted files (if files already exist, they will be **
 ```bash
 ./gradlew decryptFiles
 ```
+
+### Git ignore check
+
+You can check, if your plain unencrypted files were ignored by your ```.gitignore``` files in project,
+so they won't appear in version control history.
+```bash
+./gradlew checkFilesGitIgnored
+```
+If any is not ignored, task will fail and print which file is not ignored.
+
+### Gradle
+
+Minimal recommended gradle version is 4.0.2.
+This plugin tested with different actual versions. You can see them [here](https://github.com/CherryPerry/GradleFileEncrypt/blob/master/src/test/kotlin/com/cherryperry/gfe/FileEncryptPluginFunctionalTest.kt#L34).
 
 ### Samples
 
