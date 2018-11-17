@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/github/release/CherryPerry/GradleFileEncrypt.svg)](https://github.com/CherryPerry/GradleFileEncrypt/releases)
 
 Simply encrypt files of gradle project with password.
-Plugin will create encrypted copy of file with `.encrypted` extension. For exampale: `secret_keys.properties` -> `secret_keys.properties.encrypted`. Add `secret_keys.properties` to `.gitignore` and add `secret_keys.properties.encrypted` to vcs.
+Plugin will create encrypted copy of file with `.encrypted` extension. For example: `secret_keys.properties` -> `secret_keys.properties.encrypted`. Add `secret_keys.properties` to `.gitignore` and add `secret_keys.properties.encrypted` to vcs.
 
 ### Add it to your project
 
@@ -93,7 +93,7 @@ If any is not ignored, task will fail and print which file is not ignored.
 ### Gradle
 
 Minimal recommended gradle version is 4.0.2.
-This plugin tested with different actual versions. You can see them [here](https://github.com/CherryPerry/GradleFileEncrypt/blob/master/src/test/kotlin/com/cherryperry/gfe/FileEncryptPluginFunctionalTest.kt#L34).
+Check supported versions [here](https://github.com/CherryPerry/GradleFileEncrypt/blob/master/src/test/kotlin/com/cherryperry/gfe/FileEncryptPluginFunctionalTest.kt#L34).
 
 ### Samples
 
