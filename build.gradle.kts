@@ -10,7 +10,7 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.2.71"
+    kotlin("jvm") version "1.3.10"
     id("java-gradle-plugin")
     id("org.jmailen.kotlinter") version "1.20.1"
     id("com.github.ben-manes.versions") version "0.20.0"
