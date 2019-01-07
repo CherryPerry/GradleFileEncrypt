@@ -43,7 +43,8 @@ class FileEncryptPluginFunctionalTest(
             arrayOf<Any>("4.8.1"),
             arrayOf<Any>("4.9"),
             arrayOf<Any>("4.10.2"),
-            arrayOf<Any>("5.0")
+            arrayOf<Any>("5.0"),
+            arrayOf<Any>("5.1")
         )
     }
 
