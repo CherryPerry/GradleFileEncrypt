@@ -12,7 +12,7 @@ Plugin will create encrypted copy of file with `.encrypted` extension. For examp
 
 ```groovy
 plugins {
-    id 'com.cherryperry.gradle-file-encrypt' version '1.3.0'
+    id 'com.cherryperry.gradle-file-encrypt' version '1.3.1'
 }
 ```
 
@@ -24,7 +24,7 @@ buildscript {
         maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:1.3.0'
+        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:1.3.1'
     }
 }
 
