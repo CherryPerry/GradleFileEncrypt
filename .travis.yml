@@ -13,18 +13,17 @@ install:
 script:
   - ./gradlew check --info --console=plain --stacktrace
 deploy:
-  provider: script
-  script: ./gradlew publishPlugins -Pgradle.publish.key=$GRADLE_PLUGIN_KEY -Pgradle.publish.secret=$GRADLE_PLUGIN_SECRET
-  skip_cleanup: true
-  on:
-    tags: true
-deploy:
-  provider: releases
-  api_key: $GITHUB_API_KEY
-  file:
-    - "build/libs/gradle-file-encrypt-1.3.1.jar"
-    - "build/libs/gradle-file-encrypt-1.3.1-javadoc.jar"
-    - "build/libs/gradle-file-encrypt-1.3.1-sources.jar"
-  skip_cleanup: true
-  on:
-    tags: true
+  - provider: script
+    script: ./gradlew publishPlugins -Pgradle.publish.key=$GRADLE_PLUGIN_KEY -Pgradle.publish.secret=$GRADLE_PLUGIN_SECRET
+    skip_cleanup: true
+    on:
+      tags: true
+  - provider: releases
+    api_key: $GITHUB_API_KEY
+    file:
+      - "build/libs/gradle-file-encrypt-1.3.1.jar"
+      - "build/libs/gradle-file-encrypt-1.3.1-javadoc.jar"
+      - "build/libs/gradle-file-encrypt-1.3.1-sources.jar"
+    skip_cleanup: true
+    on:
+      tags: true
