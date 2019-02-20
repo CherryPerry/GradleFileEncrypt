@@ -11,6 +11,7 @@ import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 
 /**
  * Task checks if encryption source files are covered by any of .gitignore files.
@@ -68,12 +69,7 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
                 gitIgnoreFileVisitDetails.stopVisiting()
             }
         }
-        if (plainFiles.isNotEmpty()) {
-            plainFiles.forEach { plainFile ->
-                logger.error("${plainFile.absolutePath} is not ignored by any $FILE_GIT_IGNORE files of project")
-            }
-            throw GradleException("Some plain files are not ignored by git, see log above")
-        }
+        failTaskIfAnyFilesLeft(plainFiles)
     }
 
     private fun visitPossibleGitIgnoreFiles(visitor: (FileVisitDetails) -> Unit) {
@@ -89,6 +85,15 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
                 // restore them
                 current.forEach { DirectoryScanner.addDefaultExclude(it) }
             }
+        }
+    }
+
+    private fun failTaskIfAnyFilesLeft(plainFiles: Set<File>) {
+        if (plainFiles.isNotEmpty()) {
+            plainFiles.forEach { plainFile ->
+                logger.error("${plainFile.absolutePath} is not ignored by any $FILE_GIT_IGNORE files of project")
+            }
+            throw GradleException("Some plain files are not ignored by git, see log above")
         }
     }
 }

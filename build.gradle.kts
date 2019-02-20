@@ -1,25 +1,21 @@
-import org.gradle.internal.impldep.org.eclipse.jgit.api.Git
-import org.gradle.internal.impldep.org.eclipse.jgit.storage.file.FileRepositoryBuilder
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
         jcenter()
-        mavenCentral()
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.3.10"
+    kotlin("jvm") version "1.3.21"
     id("java-gradle-plugin")
-    id("org.jmailen.kotlinter") version "1.20.1"
     id("com.github.ben-manes.versions") version "0.20.0"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0.RC9.2"
-    id("com.gradle.plugin-publish") version "0.10.0"
+    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC14"
+    id("com.gradle.plugin-publish") version "0.10.1"
 }
 
 group = "com.cherryperry.gfe"
-version = "1.3.0"
+version = "1.3.1"
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -30,14 +26,7 @@ tasks.withType<KotlinCompile> {
 }
 
 detekt {
-    toolVersion = "1.0.0.RC9.2"
-    input = files("src/main/kotlin", "src/test/kotlin")
     config = files("detekt.yml")
-    filters = "do-not-use-it"
-}
-
-tasks.named("check").configure {
-    dependsOn(tasks.named("detekt"))
 }
 
 pluginBundle {
@@ -54,7 +43,6 @@ pluginBundle {
 
 repositories {
     jcenter()
-    mavenCentral()
 }
 
 dependencies {
@@ -63,4 +51,5 @@ dependencies {
     testImplementation(kotlin("stdlib-jdk8"))
     testImplementation("junit", "junit", "4.12")
     testImplementation(gradleTestKit())
+    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.0.0-RC14")
 }

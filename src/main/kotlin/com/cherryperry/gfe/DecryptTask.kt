@@ -7,6 +7,11 @@ import com.cherryperry.gfe.base.PlainFilesAware
 import com.cherryperry.gfe.base.PlainFilesAwareDelegate
 import com.cherryperry.gfe.base.SecretKeyAware
 import com.cherryperry.gfe.base.SecretKeyAwareDelegate
+import java.io.File
+import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.SecretKey
+import javax.inject.Inject
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
@@ -17,11 +22,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.workers.IsolationMode
 import org.gradle.workers.WorkerExecutor
-import java.io.File
-import javax.crypto.Cipher
-import javax.crypto.CipherInputStream
-import javax.crypto.SecretKey
-import javax.inject.Inject
 
 open class DecryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
@@ -45,9 +45,9 @@ open class DecryptTask @Inject constructor(
     open fun decrypt(incrementalTaskInputs: IncrementalTaskInputs) {
         if (incrementalTaskInputs.isIncremental) {
             logger.info("Input is incremental")
-            incrementalTaskInputs.outOfDate {
-                logger.info("Out of date: ${it.file}")
-                val encryptedFile = it.file
+            incrementalTaskInputs.outOfDate { inputFileDetails ->
+                logger.info("Out of date: ${inputFileDetails.file}")
+                val encryptedFile = inputFileDetails.file
                 val index = encryptedFiles.indexOf(encryptedFile)
                 val plainFile = plainFiles.asSequence().filterIndexed { i, _ -> i == index }.first()
                 enqueueDecryptionRunnable(key, encryptedFile, plainFile)

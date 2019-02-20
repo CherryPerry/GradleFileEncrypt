@@ -1,12 +1,13 @@
 autoCorrect: true
-failFast: false
 
 test-pattern: # Configure exclusions for test sources
   active: true
   patterns: # Test file regexes
     - '.*/test/.*'
+    - '.*/androidTest/.*'
     - '.*Test.kt'
     - '.*Spec.kt'
+    - '.*Spek.kt'
   exclude-rule-sets:
     - 'comments'
   exclude-rules:
@@ -19,14 +20,17 @@ test-pattern: # Configure exclusions for test sources
     - 'SpreadOperator'
     - 'TooManyFunctions'
     - 'ForEachOnRange'
+    - 'FunctionMaxLength'
+    - 'TooGenericExceptionCaught'
+    - 'InstanceOfCheckForException'
 
 build:
   maxIssues: 10
   weights:
-    # complexity: 2
-    # LongParameterList: 1
-    # style: 1
-    # comments: 1
+  # complexity: 2
+  # LongParameterList: 1
+  # style: 1
+  # comments: 1
 
 processors:
   active: true
@@ -45,13 +49,6 @@ console-reports:
   #  - 'NotificationReport'
   #  - 'FindingsReport'
   #  - 'BuildFailureReport'
-
-output-reports:
-  active: true
-  exclude:
-  #  - 'HtmlOutputReport'
-  #  - 'PlainOutputReport'
-  #  - 'XmlOutputReport'
 
 comments:
   active: true
@@ -84,14 +81,16 @@ complexity:
     active: true
     threshold: 10
     ignoreSingleWhenExpression: false
+    ignoreSimpleWhenEntries: false
   LabeledExpression:
     active: false
+    ignoredLabels: ""
   LargeClass:
     active: true
-    threshold: 150
+    threshold: 600
   LongMethod:
     active: true
-    threshold: 20
+    threshold: 60
   LongParameterList:
     active: true
     threshold: 6
@@ -117,6 +116,7 @@ complexity:
     thresholdInEnums: 11
     ignoreDeprecated: false
     ignorePrivate: false
+    ignoreOverridden: false
 
 empty-blocks:
   active: true
@@ -168,6 +168,7 @@ exceptions:
     active: false
   SwallowedException:
     active: false
+    ignoredExceptionTypes: 'InterruptedException,NumberFormatException,ParseException,MalformedURLException'
   ThrowingExceptionFromFinally:
     active: false
   ThrowingExceptionInMain:
@@ -180,21 +181,22 @@ exceptions:
   TooGenericExceptionCaught:
     active: true
     exceptionNames:
-     - ArrayIndexOutOfBoundsException
-     - Error
-     - Exception
-     - IllegalMonitorStateException
-     - NullPointerException
-     - IndexOutOfBoundsException
-     - RuntimeException
-     - Throwable
+      - ArrayIndexOutOfBoundsException
+      - Error
+      - Exception
+      - IllegalMonitorStateException
+      - NullPointerException
+      - IndexOutOfBoundsException
+      - RuntimeException
+      - Throwable
+    allowedExceptionNameRegex: "^(_|(ignore|expected).*)"
   TooGenericExceptionThrown:
     active: true
     exceptionNames:
-     - Error
-     - Exception
-     - Throwable
-     - RuntimeException
+      - Error
+      - Exception
+      - Throwable
+      - RuntimeException
 
 formatting:
   active: true
@@ -212,8 +214,7 @@ formatting:
     active: true
     autoCorrect: true
   ImportOrdering:
-    active: true
-    autoCorrect: true
+    active: false
   Indentation:
     active: true
     autoCorrect: true
@@ -235,7 +236,7 @@ formatting:
     active: true
     autoCorrect: true
   NoItParamInMultilineLambda:
-    active: true
+    active: false
   NoLineBreakAfterElse:
     active: true
     autoCorrect: true
@@ -260,6 +261,9 @@ formatting:
   NoWildcardImports:
     active: true
     autoCorrect: true
+  PackageName:
+    active: true
+    autoCorrect: true
   ParameterListWrapping:
     active: true
     autoCorrect: true
@@ -279,6 +283,9 @@ formatting:
   SpacingAroundOperators:
     active: true
     autoCorrect: true
+  SpacingAroundParens:
+    active: true
+    autoCorrect: true
   SpacingAroundRangeOperator:
     active: true
     autoCorrect: true
@@ -291,6 +298,11 @@ naming:
   ClassNaming:
     active: true
     classPattern: '[A-Z$][a-zA-Z0-9$]*'
+  ConstructorParameterNaming:
+    active: true
+    parameterPattern: '[a-z][A-Za-z0-9]*'
+    privateParameterPattern: '[a-z][A-Za-z0-9]*'
+    excludeClassPattern: '$^'
   EnumNaming:
     active: true
     enumEntryPattern: '^[A-Z][_a-zA-Z0-9]*'
@@ -307,6 +319,12 @@ naming:
     active: true
     functionPattern: '^([a-z$][a-zA-Z$0-9]*)|(`.*`)$'
     excludeClassPattern: '$^'
+    ignoreOverridden: true
+  FunctionParameterNaming:
+    active: true
+    parameterPattern: '[a-z][A-Za-z0-9]*'
+    excludeClassPattern: '$^'
+    ignoreOverriddenFunctions: true
   MatchingDeclarationName:
     active: true
   MemberNameEqualsClassName:
@@ -314,11 +332,12 @@ naming:
     ignoreOverriddenFunction: true
   ObjectPropertyNaming:
     active: true
-    propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     constantPattern: '[A-Za-z][_A-Za-z0-9]*'
+    propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
+    privatePropertyPattern: '(_)?[A-Za-z][_A-Za-z0-9]*'
   PackageNaming:
     active: true
-    packagePattern: '^[a-z]+(\.[a-z][a-z0-9]*)*$'
+    packagePattern: '^[a-z]+(\.[a-z][A-Za-z0-9]*)*$'
   TopLevelPropertyNaming:
     active: true
     constantPattern: '[A-Z][_A-Z0-9]*'
@@ -335,9 +354,12 @@ naming:
     variablePattern: '[a-z][A-Za-z0-9]*'
     privateVariablePattern: '(_)?[a-z][A-Za-z0-9]*'
     excludeClassPattern: '$^'
+    ignoreOverridden: true
 
 performance:
   active: true
+  ArrayPrimitive:
+    active: false
   ForEachOnRange:
     active: true
   SpreadOperator:
@@ -387,6 +409,10 @@ style:
     conversionFunctionPrefix: 'to'
   EqualsNullCall:
     active: false
+  EqualsOnSignatureLine:
+    active: false
+  ExplicitItLambdaParameter:
+    active: false
   ExpressionBodySyntax:
     active: false
     includeLineWrapping: false
@@ -396,6 +422,8 @@ style:
   ForbiddenImport:
     active: false
     imports: ''
+  ForbiddenVoid:
+    active: false
   FunctionOnlyReturningConstant:
     active: false
     ignoreOverridableFunction: true
@@ -406,7 +434,7 @@ style:
   MagicNumber:
     active: true
     ignoreNumbers: '-1,0,1,2'
-    ignoreHashCodeFunction: false
+    ignoreHashCodeFunction: true
     ignorePropertyDeclaration: false
     ignoreConstantDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
@@ -418,8 +446,8 @@ style:
   MaxLineLength:
     active: true
     maxLineLength: 120
-    excludePackageStatements: false
-    excludeImportStatements: false
+    excludePackageStatements: true
+    excludeImportStatements: true
     excludeCommentStatements: false
   MayBeConst:
     active: false
@@ -447,6 +475,8 @@ style:
     active: true
     max: 2
     excludedFunctions: "equals"
+    excludeLabeled: false
+    excludeReturnFromLambda: true
   SafeCast:
     active: true
   SerialVersionUIDInSerializableClass:
@@ -458,9 +488,17 @@ style:
     max: 2
   TrailingWhitespace:
     active: false
+  UnderscoresInNumericLiterals:
+    active: false
+    acceptableDecimalLength: 5
   UnnecessaryAbstractClass:
     active: false
+    excludeAnnotatedClasses: "dagger.Module"
+  UnnecessaryApply:
+    active: false
   UnnecessaryInheritance:
+    active: false
+  UnnecessaryLet:
     active: false
   UnnecessaryParentheses:
     active: false
@@ -468,14 +506,18 @@ style:
     active: false
   UnusedImports:
     active: false
+  UnusedPrivateClass:
+    active: false
   UnusedPrivateMember:
     active: false
-    allowedNames: "(_|ignored|expected)"
+    allowedNames: "(_|ignored|expected|serialVersionUID)"
   UseDataClass:
     active: false
     excludeAnnotatedClasses: ""
   UtilityClassWithPublicConstructor:
     active: false
+  VarCouldBeVal:
+    active: false
   WildcardImport:
     active: true
-    excludeImports: 'java.util.*,kotlinx.android.synthetic.*'
+    excludeImports: 'kotlinx.android.synthetic.*'

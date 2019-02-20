@@ -1,10 +1,10 @@
 package com.cherryperry.gfe
 
-import org.gradle.api.Project
-import org.gradle.api.logging.Logger
 import java.io.FileInputStream
 import java.util.Properties
 import java.util.concurrent.Callable
+import org.gradle.api.Project
+import org.gradle.api.logging.Logger
 
 object PasswordReader {
 
