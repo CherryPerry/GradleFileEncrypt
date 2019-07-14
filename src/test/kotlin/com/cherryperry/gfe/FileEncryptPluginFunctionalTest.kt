@@ -32,23 +32,23 @@ class FileEncryptPluginFunctionalTest(
         @JvmStatic
         @Parameterized.Parameters(name = "Gradle version: {0}")
         fun gradleVersions(): Collection<Array<Any>> = arrayListOf(
-            arrayOf("4.0.2"),
-            arrayOf("4.1"),
-            arrayOf("4.2.1"),
-            arrayOf("4.3.1"),
-            arrayOf("4.4.1"),
-            arrayOf("4.5.1"),
-            arrayOf("4.6"),
-            arrayOf("4.7"),
-            arrayOf("4.8.1"),
-            arrayOf("4.9"),
-            arrayOf("4.10.3"),
-            arrayOf("5.0"),
-            arrayOf("5.1.1"),
-            arrayOf("5.2.1"),
-            arrayOf("5.3.1"),
-            arrayOf("5.4.1"),
-            arrayOf("5.5.1")
+            arrayOf<Any>("4.0.2"),
+            arrayOf<Any>("4.1"),
+            arrayOf<Any>("4.2.1"),
+            arrayOf<Any>("4.3.1"),
+            arrayOf<Any>("4.4.1"),
+            arrayOf<Any>("4.5.1"),
+            arrayOf<Any>("4.6"),
+            arrayOf<Any>("4.7"),
+            arrayOf<Any>("4.8.1"),
+            arrayOf<Any>("4.9"),
+            arrayOf<Any>("4.10.3"),
+            arrayOf<Any>("5.0"),
+            arrayOf<Any>("5.1.1"),
+            arrayOf<Any>("5.2.1"),
+            arrayOf<Any>("5.3.1"),
+            arrayOf<Any>("5.4.1"),
+            arrayOf<Any>("5.5.1")
         )
     }
 
