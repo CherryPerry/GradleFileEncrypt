@@ -11,7 +11,7 @@ open class FileEncryptPluginExtension constructor(
     /**
      * Files to encrypt.
      */
-    val files: ConfigurableFileCollection = project.objects.fileCollection()
+    val files: ConfigurableFileCollection = project.files()
 
     /**
      * File mapping between plain and encrypted versions of file.
