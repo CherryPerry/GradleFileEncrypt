@@ -95,7 +95,7 @@ class FileEncryptPluginFunctionalTest(
             $EMPTY_BUILD_GRADLE
             gradleFileEncrypt
             {
-                files '${file.relativeTo(temporaryFolder.root).linuxPath}'
+                files.from('${file.relativeTo(temporaryFolder.root).linuxPath}')
                 $mapping
                 passwordProvider { return '$password'.toCharArray() }
             }
@@ -312,6 +312,7 @@ class FileEncryptPluginFunctionalTest(
 
     private operator fun BuildResult.get(taskName: String): BuildTask = task(":$taskName")!!
 
+    /** Gradle consumes only linux paths in it's configuration files. Fix to run this test on Windows. */
     private val File.linuxPath
         get() = this.path.replace(File.separatorChar, '/')
 }
