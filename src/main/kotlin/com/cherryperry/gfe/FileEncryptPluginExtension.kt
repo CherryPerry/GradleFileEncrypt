@@ -1,18 +1,17 @@
 package com.cherryperry.gfe
 
+import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.model.ObjectFactory
 import java.util.concurrent.Callable
-import javax.inject.Inject
 
-open class FileEncryptPluginExtension @Inject constructor(
-    objectFactory: ObjectFactory
+open class FileEncryptPluginExtension constructor(
+    project: Project
 ) {
 
     /**
      * Files to encrypt.
      */
-    val files: ConfigurableFileCollection = objectFactory.fileCollection()
+    val files: ConfigurableFileCollection = project.objects.fileCollection()
 
     /**
      * File mapping between plain and encrypted versions of file.
