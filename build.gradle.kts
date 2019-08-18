@@ -8,6 +8,7 @@ buildscript {
 
 plugins {
     kotlin("jvm") version "1.3.21"
+    id("java-gradle-plugin")
     id("com.github.ben-manes.versions") version "0.21.0"
     id("io.gitlab.arturbosch.detekt") version "1.0.0-RC14"
     id("com.gradle.plugin-publish") version "0.10.1"
@@ -15,6 +16,11 @@ plugins {
 
 group = "com.cherryperry.gfe"
 version = "1.3.1"
+
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
