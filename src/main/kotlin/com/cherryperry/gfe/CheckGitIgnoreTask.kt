@@ -3,21 +3,22 @@ package com.cherryperry.gfe
 import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.PlainFilesAware
 import com.cherryperry.gfe.base.PlainFilesAwareDelegate
-import org.apache.tools.ant.DirectoryScanner
-import org.eclipse.jgit.ignore.IgnoreNode
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.treewalk.FileTreeIterator
+import org.eclipse.jgit.treewalk.TreeWalk
+import org.eclipse.jgit.treewalk.WorkingTreeIterator
 import org.gradle.api.GradleException
-import org.gradle.api.file.FileTree
-import org.gradle.api.file.FileVisitDetails
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import java.io.File
+import java.io.IOException
 
 /**
  * Task checks if encryption source files are covered by any of .gitignore files.
  *
- * There is problems with discovering git files via gradle API,
- * see [link](https://github.com/gradle/gradle/issues/2986) and [link](https://github.com/gradle/gradle/issues/1348).
+ * See [link](https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit.test/tst/org/eclipse/jgit/ignore/CGitIgnoreTest.java)
+ * for ignore file check implementation.
  */
 open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
 
@@ -31,67 +32,34 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
 
     @TaskAction
     open fun checkGitIgnoreFiles() {
-        // we will remove every ignored plain file from this set
-        val plainFiles = plainFiles.toMutableSet()
-        if (plainFiles.isEmpty()) {
-            logger.info("No files to check")
-            return
+        val git = try {
+            Git.open(project.projectDir)
+        } catch (exception: IOException) {
+            throw GradleException("Git repository was not found at path ${project.projectDir}", exception)
         }
-        // find all .gitignore files on project
-        visitPossibleGitIgnoreFiles { gitIgnoreFileVisitDetails ->
-            val gitIgnoreFile = gitIgnoreFileVisitDetails.file
-            // "include" filter does not work, here goes all files in project tree
-            if (gitIgnoreFile.name != FILE_GIT_IGNORE || !gitIgnoreFile.canRead()) {
-                return@visitPossibleGitIgnoreFiles
-            }
-            logger.info("Processing ${gitIgnoreFile.absolutePath}")
-            // parse each .gitignore file
-            val ignoreNode = IgnoreNode()
-            gitIgnoreFile.inputStream().use { stream ->
-                ignoreNode.parse(stream)
-            }
-            logger.info("There is ${ignoreNode.rules.size} rules")
-            // check each left plain file
-            val removedAtLeastOne = plainFiles.removeAll { plainFile ->
-                // if it is under current .gitignore scope and is ignored
-                val relativeFile = plainFile.relativeToOrNull(gitIgnoreFile.parentFile)
-                if (relativeFile != null) {
-                    val ignored = ignoreNode.isIgnored(relativeFile.path, plainFile.isDirectory) ==
-                        IgnoreNode.MatchResult.IGNORED
-                    logger.info("${plainFile.absolutePath} is ignored by ${gitIgnoreFile.absolutePath}")
-                    ignored
-                } else {
-                    false
+        val plainFiles = plainFiles.mapNotNull { it.relativeToOrNull(project.projectDir)?.path }.toHashSet()
+        TreeWalk(git.repository).use { treeWalk ->
+            val fileTreeIterator = FileTreeIterator(git.repository)
+            fileTreeIterator.setWalkIgnoredDirectories(true)
+            treeWalk.addTree(fileTreeIterator)
+            treeWalk.isRecursive = true
+            while (treeWalk.next() && plainFiles.isNotEmpty()) {
+                if (treeWalk.getTree(WorkingTreeIterator::class.java).isEntryIgnored) {
+                    val path = treeWalk.pathString
+                    val removed = plainFiles.remove(path)
+                    if (removed) {
+                        logger.info("$path is ignored")
+                    }
                 }
-            }
-            if (removedAtLeastOne && plainFiles.isEmpty()) {
-                // stop visiting if all files were checked
-                gitIgnoreFileVisitDetails.stopVisiting()
             }
         }
         failTaskIfAnyFilesLeft(plainFiles)
     }
 
-    private fun visitPossibleGitIgnoreFiles(visitor: (FileVisitDetails) -> Unit) {
-        // it is possible for DirectoryScanner be changed from multiple threads!
-        synchronized(DirectoryScanner::class) {
-            val current = DirectoryScanner.getDefaultExcludes()
-            // remove current excludes
-            current.forEach { DirectoryScanner.removeDefaultExclude(it) }
-            try {
-                val fileTree = project.fileTree(project.projectDir) as FileTree
-                fileTree.visit { fileVisitDetails -> visitor(fileVisitDetails) }
-            } finally {
-                // restore them
-                current.forEach { DirectoryScanner.addDefaultExclude(it) }
-            }
-        }
-    }
-
-    private fun failTaskIfAnyFilesLeft(plainFiles: Set<File>) {
-        if (plainFiles.isNotEmpty()) {
-            plainFiles.forEach { plainFile ->
-                logger.error("${plainFile.absolutePath} is not ignored by any $FILE_GIT_IGNORE files of project")
+    private fun failTaskIfAnyFilesLeft(relativePlainFiles: Collection<String>) {
+        if (relativePlainFiles.isNotEmpty()) {
+            relativePlainFiles.forEach { plainFile ->
+                logger.error("${File(project.projectDir, plainFile)} is not ignored by any $FILE_GIT_IGNORE files of project")
             }
             throw GradleException("Some plain files are not ignored by git, see log above")
         }

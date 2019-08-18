@@ -46,6 +46,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.4.0.201906121030-r")
     compileOnly(gradleApi())
     compileOnly(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("stdlib-jdk8"))
