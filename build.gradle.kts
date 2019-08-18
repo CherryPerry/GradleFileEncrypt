@@ -19,6 +19,7 @@ version = "1.3.1"
 
 configure<JavaPluginConvention> {
     sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<KotlinCompile> {
@@ -46,8 +47,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.4.0.201906121030-r")
+    implementation(kotlin("stdlib-jdk8"))
     compileOnly(gradleApi())
-    compileOnly(kotlin("stdlib-jdk8"))
     testImplementation(kotlin("stdlib-jdk8"))
     testImplementation("junit", "junit", "4.12")
     testImplementation(gradleTestKit())

@@ -1,5 +1,6 @@
 package com.cherryperry.gfe
 
+import org.eclipse.jgit.api.Git
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
@@ -280,6 +281,7 @@ class FileEncryptPluginFunctionalTest(
         testFile.writeText(CONTENT_1)
         val gitIgnoreFile = temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
         gitIgnoreFile.appendText(testFile.name)
+        Git.init().setDirectory(temporaryFolder.root).call()
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_GIT_IGNORE_NAME].outcome)
         }
@@ -291,9 +293,9 @@ class FileEncryptPluginFunctionalTest(
         val testDirectory = TemporaryFolder(temporaryFolder.newFolder())
         testDirectory.create()
         val testFile = testDirectory.newFile()
-        testFile.writeText(CONTENT_1)
         val gitIgnoreFile = testDirectory.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
         gitIgnoreFile.appendText(testFile.name)
+        Git.init().setDirectory(temporaryFolder.root).call()
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_GIT_IGNORE_NAME].outcome)
         }
@@ -303,8 +305,20 @@ class FileEncryptPluginFunctionalTest(
     fun testFileIsNotIgnoredByAnyGitIgnore() {
         // test task is failed when file is not ignored
         val testFile = temporaryFolder.newFile()
-        testFile.writeText(CONTENT_1)
         temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        Git.init().setDirectory(temporaryFolder.root).call()
+        // don't know why exception instead of TaskOutcome.FAILED
+        expectedException.expect(UnexpectedBuildFailure::class.java)
+        createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME)
+    }
+
+    @Test
+    fun testFileIsNotIgnoredByTemplateGitIgnore() {
+        // test task is failed when file is not ignored
+        val testFile = temporaryFolder.newFile("file2.plain")
+        val gitIgnoreFile = temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        gitIgnoreFile.appendText("!*.encrypted")
+        Git.init().setDirectory(temporaryFolder.root).call()
         // don't know why exception instead of TaskOutcome.FAILED
         expectedException.expect(UnexpectedBuildFailure::class.java)
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME)
