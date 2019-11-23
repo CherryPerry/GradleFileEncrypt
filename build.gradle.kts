@@ -7,10 +7,10 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.3.21"
-    id("java-gradle-plugin")
-    id("com.github.ben-manes.versions") version "0.21.0"
-    id("io.gitlab.arturbosch.detekt") version "1.0.0-RC14"
+    `embedded-kotlin`
+    `java-gradle-plugin`
+    id("com.github.ben-manes.versions") version "0.27.0"
+    id("io.gitlab.arturbosch.detekt") version "1.1.1"
     id("com.gradle.plugin-publish") version "0.10.1"
 }
 
@@ -47,11 +47,12 @@ repositories {
 }
 
 dependencies {
-    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.4.0.201906121030-r")
-    implementation(kotlin("stdlib-jdk8"))
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.5.1.201910021850-r")
+
     compileOnly(gradleApi())
-    testImplementation(kotlin("stdlib-jdk8"))
+
     testImplementation("junit", "junit", "4.12")
     testImplementation(gradleTestKit())
-    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.0.0-RC14")
+
+    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.1.1")
 }
