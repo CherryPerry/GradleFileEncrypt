@@ -54,7 +54,16 @@ class FileEncryptPluginFunctionalTest(
     }
 
     @get:Rule
-    val temporaryFolder = TemporaryFolder()
+    val temporaryFolder = TemporaryFolder(
+        let {
+            val build = File("build")
+            if (build.exists()) {
+                File(build, "temp${File.separator}test").apply { mkdirs() }
+            } else {
+                null
+            }
+        }
+    )
 
     @get:Rule
     val expectedException: ExpectedException = ExpectedException.none()
