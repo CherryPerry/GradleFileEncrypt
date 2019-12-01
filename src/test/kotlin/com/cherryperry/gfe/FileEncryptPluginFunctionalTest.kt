@@ -27,13 +27,12 @@ class FileEncryptPluginFunctionalTest(
         const val PASSWORD = "password"
         const val PASSWORD_2 = "password2"
         const val FILE_BUILD_GRADLE = "build.gradle"
-        const val FILE_GRADLE_PROPERTIES = "gradle.properties"
 
         // test all supported gradle versions
         @JvmStatic
         @Parameterized.Parameters(name = "Gradle version: {0}")
         fun gradleVersions(): Collection<Array<Any>> = arrayListOf(
-            /*arrayOf<Any>("4.0.2"),
+            arrayOf<Any>("4.0.2"),
             arrayOf<Any>("4.1"),
             arrayOf<Any>("4.2.1"),
             arrayOf<Any>("4.3.1"),
@@ -41,7 +40,7 @@ class FileEncryptPluginFunctionalTest(
             arrayOf<Any>("4.5.1"),
             arrayOf<Any>("4.6"),
             arrayOf<Any>("4.7"),
-            arrayOf<Any>("4.8.1"),*/
+            arrayOf<Any>("4.8.1"),
             arrayOf<Any>("4.9"),
             arrayOf<Any>("4.10.3"),
             arrayOf<Any>("5.0"),
@@ -54,12 +53,10 @@ class FileEncryptPluginFunctionalTest(
         )
     }
 
-    @Rule
-    @JvmField
+    @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    @Rule
-    @JvmField
+    @get:Rule
     val expectedException: ExpectedException = ExpectedException.none()
 
     private fun createRunner(
@@ -68,17 +65,12 @@ class FileEncryptPluginFunctionalTest(
     ): BuildResult {
         val buildGradle = File(temporaryFolder.root, FILE_BUILD_GRADLE)
         buildGradle.writeText(buildGradleContent)
-        val gradleProperties = File(temporaryFolder.root, FILE_GRADLE_PROPERTIES)
-        javaClass.classLoader.getResourceAsStream(FILE_GRADLE_PROPERTIES).use { inputStream ->
-            gradleProperties.outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-        }
         return GradleRunner.create()
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
-            .withArguments(mutableListOf("--stacktrace") + args)
+            .withDebug(true)
+            .withArguments(mutableListOf("--stacktrace", "--build-cache") + args)
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
             .build()
