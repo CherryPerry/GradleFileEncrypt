@@ -54,16 +54,7 @@ class FileEncryptPluginFunctionalTest(
     }
 
     @get:Rule
-    val temporaryFolder = TemporaryFolder(
-        let {
-            val build = File("build")
-            if (build.exists()) {
-                File(build, "temp${File.separator}test").apply { mkdirs() }
-            } else {
-                null
-            }
-        }
-    )
+    val temporaryFolder = TemporaryFolder()
 
     @get:Rule
     val expectedException: ExpectedException = ExpectedException.none()
@@ -78,11 +69,9 @@ class FileEncryptPluginFunctionalTest(
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
-            .withDebug(true)
             .withArguments(mutableListOf("--stacktrace", "--build-cache") + args)
-            .forwardStdOutput(System.out.writer())
-            .forwardStdError(System.err.writer())
             .build()
+            .apply { println(output) }
     }
 
     private fun buildGradleConfigurationWithFiles(
