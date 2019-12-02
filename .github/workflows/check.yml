@@ -12,4 +12,4 @@ jobs:
         with:
           java-version: 1.8
       - name: Check
-        run: ./gradlew assemble check --info --stacktrace -Xmx4g
+        run: ./gradlew assemble check --info --stacktrace -Porg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m"
