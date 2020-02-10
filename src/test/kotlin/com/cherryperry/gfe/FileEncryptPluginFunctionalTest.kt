@@ -70,6 +70,7 @@ class FileEncryptPluginFunctionalTest(
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
             .withArguments(mutableListOf("--stacktrace", "--build-cache") + args)
+            .withDebug(true)
             .build()
             .apply { println(output) }
     }
