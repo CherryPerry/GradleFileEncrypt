@@ -17,8 +17,7 @@ import java.io.IOException
 /**
  * Task checks if encryption source files are covered by any of .gitignore files.
  *
- * See [link](https://github.com/eclipse/jgit/blob/master/org.eclipse.jgit.test/tst/org/eclipse/jgit/ignore/CGitIgnoreTest.java)
- * for ignore file check implementation.
+ * See `CGitIgnoreTest.java` for ignore file check implementation.
  */
 open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
 
