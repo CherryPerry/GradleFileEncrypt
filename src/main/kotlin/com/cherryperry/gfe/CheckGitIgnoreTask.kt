@@ -2,16 +2,17 @@ package com.cherryperry.gfe
 
 import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.PlainFilesAware
-import com.cherryperry.gfe.base.PlainFilesAwareDelegate
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Constants
 import org.eclipse.jgit.treewalk.FileTreeIterator
 import org.eclipse.jgit.treewalk.TreeWalk
 import org.eclipse.jgit.treewalk.WorkingTreeIterator
 import org.gradle.api.GradleException
+import org.gradle.api.file.Directory
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 import java.io.IOException
 
 /**
@@ -21,27 +22,30 @@ import java.io.IOException
  */
 open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
 
-    companion object {
-        const val FILE_GIT_IGNORE = ".gitignore"
-    }
+    private val projectDir: Directory =
+        project.layout.projectDirectory
+
+    @get:[InputFiles SkipWhenEmpty]
+    override val plainFiles: FileCollection =
+        fileEncryptPluginExtension.plainFiles
 
     @get:InputFiles
-    @get:SkipWhenEmpty
-    override val plainFiles by PlainFilesAwareDelegate()
+    val gitIgnoreFiles: FileCollection =
+        project.fileTree(mapOf("dir" to projectDir, "include" to "**/${Constants.DOT_GIT_IGNORE}"))
 
     @TaskAction
     open fun checkGitIgnoreFiles() {
         val git = try {
-            Git.open(project.projectDir)
+            Git.open(projectDir.asFile)
         } catch (exception: IOException) {
-            throw GradleException("Git repository was not found at path ${project.projectDir}", exception)
+            throw GradleException("Git repository was not found at path $projectDir", exception)
         }
-        val plainFiles = plainFiles.mapNotNull { it.relativeToOrNull(project.projectDir)?.path }.toHashSet()
+        val plainFiles = plainFiles.mapNotNull { it.toRelativeString(projectDir.asFile) }.toHashSet()
         TreeWalk(git.repository).use { treeWalk -> walkThrough(git, treeWalk, plainFiles) }
         failTaskIfAnyFilesLeft(plainFiles)
     }
 
-    private fun walkThrough(git: Git, treeWalk: TreeWalk, plainFiles: HashSet<String>) {
+    private fun walkThrough(git: Git, treeWalk: TreeWalk, plainFiles: MutableCollection<String>) {
         val fileTreeIterator = FileTreeIterator(git.repository)
         fileTreeIterator.setWalkIgnoredDirectories(true)
         treeWalk.addTree(fileTreeIterator)
@@ -60,9 +64,7 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
     private fun failTaskIfAnyFilesLeft(relativePlainFiles: Collection<String>) {
         if (relativePlainFiles.isNotEmpty()) {
             relativePlainFiles.forEach { plainFile ->
-                logger.error(
-                    "${File(project.projectDir, plainFile)} is not ignored by any $FILE_GIT_IGNORE files of project"
-                )
+                logger.error("${projectDir.file(plainFile)} is not ignored by any ${Constants.DOT_GIT_IGNORE} files of project")
             }
             throw GradleException("Some plain files are not ignored by git, see log above")
         }

@@ -1,10 +1,13 @@
 package com.cherryperry.gfe
 
-import java.io.FileInputStream
+import org.gradle.api.Project
+import org.gradle.api.file.ProjectLayout
+import org.gradle.api.logging.Logger
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
+import java.io.ByteArrayInputStream
 import java.util.Properties
 import java.util.concurrent.Callable
-import org.gradle.api.Project
-import org.gradle.api.logging.Logger
 
 object PasswordReader {
 
@@ -16,12 +19,13 @@ object PasswordReader {
         logger: Logger?,
         project: Project,
         environment: Environment,
-        provider: Callable<CharArray>?
+        provider: Provider<Callable<CharArray>>,
     ): CharArray {
         val providers = arrayListOf(
             DelegatePasswordProvider(provider),
-            PropertiesPasswordProvider(project),
-            EnvironmentPasswordProvider(environment))
+            PropertiesPasswordProvider(project.providers, project.layout),
+            EnvironmentPasswordProvider(environment)
+        )
         providers.forEach { passwordProvider ->
             val result = passwordProvider.getPassword()
             result?.let {
@@ -38,21 +42,24 @@ object PasswordReader {
     }
 
     class DelegatePasswordProvider(
-        private val provider: Callable<CharArray>?
+        private val provider: Provider<Callable<CharArray>>,
     ) : PasswordProvider {
 
-        override fun getPassword(): CharArray? = provider?.call()
+        override fun getPassword(): CharArray? = provider.orNull?.call()
     }
 
     class PropertiesPasswordProvider(
-        private val project: Project
+        private val providers: ProviderFactory,
+        private val layout: ProjectLayout,
     ) : PasswordProvider {
 
         override fun getPassword(): CharArray? {
-            val propertiesFile = project.file(LOCAL_PROPERTIES_FILE)
-            if (propertiesFile.exists() && propertiesFile.canRead()) {
+            val propertiesFile = providers.fileContents(layout.projectDirectory.file(LOCAL_PROPERTIES_FILE))
+                .asBytes.forUseAtConfigurationTime().orNull
+            if (propertiesFile != null) {
                 Properties().apply {
-                    FileInputStream(propertiesFile).use { load(it) }
+                    ByteArrayInputStream(propertiesFile).use { load(it) }
+                    propertiesFile.fill(0)
                     getProperty(LOCAL_PROPERTIES_KEY)?.apply { return toCharArray() }
                 }
             }

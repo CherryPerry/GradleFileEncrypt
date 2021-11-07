@@ -1,19 +1,26 @@
 package com.cherryperry.gfe.base
 
 import com.cherryperry.gfe.FileNameTransformer
-import java.io.File
+import org.gradle.api.file.FileCollection
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
-class EncryptedFilesAwareDelegate<T> : ReadOnlyProperty<T, Iterable<File>>
+class EncryptedFilesAwareDelegate<T>(
+    thisRef: BaseTask,
+) : ReadOnlyProperty<T, FileCollection>
     where T : BaseTask, T : PlainFilesAware {
 
-    override fun getValue(thisRef: T, property: KProperty<*>): Iterable<File> =
-        thisRef.fileEncryptPluginExtension.files
+    private val files =
+        thisRef.fileEncryptPluginExtension.plainFiles
             .map { original ->
-                thisRef.fileEncryptPluginExtension.mapping[original]?.let { mapped -> return@map mapped }
-                original
+                val originalRel = original.relativeTo(thisRef.project.projectDir).path
+                thisRef.fileEncryptPluginExtension.mapping.getting(originalRel).orNull ?: original
             }
             .map { thisRef.project.file(it) }
             .map { FileNameTransformer.encryptedFileFromFile(it) }
+            .let { thisRef.project.files(it) }
+
+    override fun getValue(thisRef: T, property: KProperty<*>): FileCollection =
+        files
+
 }

@@ -4,14 +4,9 @@ import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.EncryptedFilesAware
 import com.cherryperry.gfe.base.EncryptedFilesAwareDelegate
 import com.cherryperry.gfe.base.PlainFilesAware
-import com.cherryperry.gfe.base.PlainFilesAwareDelegate
 import com.cherryperry.gfe.base.SecretKeyAware
 import com.cherryperry.gfe.base.SecretKeyAwareDelegate
-import java.io.File
-import javax.crypto.Cipher
-import javax.crypto.CipherInputStream
-import javax.crypto.SecretKey
-import javax.inject.Inject
+import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
@@ -22,20 +17,24 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.workers.IsolationMode
 import org.gradle.workers.WorkerExecutor
+import java.io.File
+import javax.crypto.Cipher
+import javax.crypto.CipherInputStream
+import javax.crypto.SecretKey
+import javax.inject.Inject
 
 open class DecryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
 ) : BaseTask(), SecretKeyAware, PlainFilesAware, EncryptedFilesAware {
 
     @get:Input
-    override val key: SecretKey by SecretKeyAwareDelegate()
+    override val key: SecretKey? by SecretKeyAwareDelegate(this)
 
-    @get:InputFiles
-    @get:SkipWhenEmpty
-    override val encryptedFiles: Iterable<File> by EncryptedFilesAwareDelegate()
+    @get:[InputFiles SkipWhenEmpty]
+    override val encryptedFiles: FileCollection by EncryptedFilesAwareDelegate(this)
 
     @get:OutputFiles
-    override val plainFiles: Iterable<File> by PlainFilesAwareDelegate()
+    override val plainFiles: FileCollection = fileEncryptPluginExtension.plainFiles
 
     init {
         description = "Decrypts all encrypted files from configuration if they exist"
@@ -43,6 +42,7 @@ open class DecryptTask @Inject constructor(
 
     @TaskAction
     open fun decrypt(incrementalTaskInputs: IncrementalTaskInputs) {
+        val key = requireNotNull(key)
         if (incrementalTaskInputs.isIncremental) {
             logger.info("Input is incremental")
             incrementalTaskInputs.outOfDate { inputFileDetails ->

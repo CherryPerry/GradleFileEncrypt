@@ -4,38 +4,38 @@ import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.EncryptedFilesAware
 import com.cherryperry.gfe.base.EncryptedFilesAwareDelegate
 import com.cherryperry.gfe.base.PlainFilesAware
-import com.cherryperry.gfe.base.PlainFilesAwareDelegate
 import com.cherryperry.gfe.base.SecretKeyAware
 import com.cherryperry.gfe.base.SecretKeyAwareDelegate
-import java.io.File
-import javax.crypto.Cipher
-import javax.crypto.CipherOutputStream
-import javax.crypto.SecretKey
-import javax.inject.Inject
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity.RELATIVE
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
 import org.gradle.workers.IsolationMode
 import org.gradle.workers.WorkerExecutor
+import java.io.File
+import javax.crypto.Cipher
+import javax.crypto.CipherOutputStream
+import javax.crypto.SecretKey
+import javax.inject.Inject
 
 open class EncryptTask @Inject constructor(
     private val workerExecutor: WorkerExecutor
 ) : BaseTask(), SecretKeyAware, PlainFilesAware, EncryptedFilesAware {
 
     @get:Input
-    override val key: SecretKey by SecretKeyAwareDelegate()
+    override val key: SecretKey? by SecretKeyAwareDelegate(this)
 
-    @get:InputFiles
-    @get:SkipWhenEmpty
-    override val plainFiles by PlainFilesAwareDelegate()
+    @get:[InputFiles SkipWhenEmpty PathSensitive(RELATIVE)]
+    override val plainFiles = fileEncryptPluginExtension.plainFiles
 
     @get:OutputFiles
-    override val encryptedFiles by EncryptedFilesAwareDelegate()
+    override val encryptedFiles by EncryptedFilesAwareDelegate(this)
 
     init {
         description = "Encrypts all unencrypted files from configuration if they exist"
@@ -43,6 +43,7 @@ open class EncryptTask @Inject constructor(
 
     @TaskAction
     open fun encrypt(incrementalTaskInputs: IncrementalTaskInputs) {
+        val key = requireNotNull(key)
         if (incrementalTaskInputs.isIncremental) {
             logger.info("Input is incremental")
             incrementalTaskInputs.outOfDate {
