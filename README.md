@@ -1,6 +1,6 @@
 ## File encryption plugin for Gradle
 
-[![Build Status](https://travis-ci.com/CherryPerry/GradleFileEncrypt.svg?branch=master)](https://travis-ci.com/CherryPerry/GradleFileEncrypt)
+[![Build Status](https://github.com/CherryPerry/GradleFileEncrypt/actions/workflows/build.yml/badge.svg)](https://github.com/CherryPerry/GradleFileEncrypt/actions/workflows/build.yml)
 [![Version](https://img.shields.io/github/release/CherryPerry/GradleFileEncrypt.svg)](https://github.com/CherryPerry/GradleFileEncrypt/releases)
 
 Simply encrypt files of gradle project with password.
