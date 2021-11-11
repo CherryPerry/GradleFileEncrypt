@@ -22,8 +22,12 @@ class FileEncryptPluginFunctionalTest(
 
     companion object {
         const val EMPTY_BUILD_GRADLE = "plugins { id 'com.cherryperry.gradle-file-encrypt' }"
-        const val CONTENT_1 = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-        const val CONTENT_2 = "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+        const val CONTENT_1 =
+            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        const val CONTENT_2 =
+            "Ut enim ad minim veniam, quis nostrud exercitation ullamco " +
+                "laboris nisi ut aliquip ex ea commodo consequat."
         const val PASSWORD = "password"
         const val PASSWORD_2 = "password2"
         const val FILE_BUILD_GRADLE = "build.gradle"
@@ -80,10 +84,12 @@ class FileEncryptPluginFunctionalTest(
         password: String = PASSWORD,
         mappedFile: File? = null
     ): String {
-        val mapping = if (mappedFile != null)
-            "mapping = ['${file.relativeTo(temporaryFolder.root).linuxPath}':'${mappedFile.relativeTo(temporaryFolder.root).linuxPath}']"
-        else
+        val mapping = if (mappedFile != null) {
+            "mapping = ['${file.relativeTo(temporaryFolder.root).linuxPath}'" +
+                ":'${mappedFile.relativeTo(temporaryFolder.root).linuxPath}']"
+        } else {
             ""
+        }
         return """
             $EMPTY_BUILD_GRADLE
             gradleFileEncrypt
@@ -244,7 +250,10 @@ class FileEncryptPluginFunctionalTest(
         val mappedFile = temporaryFolder.newFile()
         mappedFile.delete()
         val encryptedMappedFile = FileNameTransformer.encryptedFileFromFile(mappedFile)
-        createRunner(buildGradleConfigurationWithFiles(testFile, mappedFile = mappedFile), FileEncryptPlugin.TASK_ENCRYPT_NAME).let {
+        createRunner(
+            buildGradleConfigurationWithFiles(testFile, mappedFile = mappedFile),
+            FileEncryptPlugin.TASK_ENCRYPT_NAME
+        ).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
         testFile.delete()
@@ -252,7 +261,10 @@ class FileEncryptPluginFunctionalTest(
         Assert.assertTrue(encryptedMappedFile.exists())
         Assert.assertTrue(encryptedMappedFile.length() > 0)
         // decrypt mapped file
-        createRunner(buildGradleConfigurationWithFiles(testFile, mappedFile = mappedFile), FileEncryptPlugin.TASK_DECRYPT_NAME).let {
+        createRunner(
+            buildGradleConfigurationWithFiles(testFile, mappedFile = mappedFile),
+            FileEncryptPlugin.TASK_DECRYPT_NAME
+        ).let {
             Assert.assertEquals(TaskOutcome.SUCCESS, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
         }
         Assert.assertEquals(CONTENT_1, testFile.readText())
