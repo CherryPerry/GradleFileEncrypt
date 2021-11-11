@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
@@ -17,13 +17,16 @@ plugins {
 group = "com.cherryperry.gfe"
 version = "1.4.0"
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+        kotlinOptions.languageVersion = "1.3"
+    }
 }
 
 detekt {
@@ -43,7 +46,7 @@ pluginBundle {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
