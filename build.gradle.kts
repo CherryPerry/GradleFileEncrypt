@@ -2,28 +2,31 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 }
 
 plugins {
-    kotlin("jvm") version "1.5.21"
+    kotlin("jvm") version "1.5.31"
     id("java-gradle-plugin")
     id("com.github.ben-manes.versions") version "0.28.0"
-    id("io.gitlab.arturbosch.detekt") version "1.6.0"
+    id("io.gitlab.arturbosch.detekt") version "1.18.1"
     id("com.gradle.plugin-publish") version "0.10.1"
 }
 
 group = "com.cherryperry.gfe"
 version = "1.4.0"
 
-configure<JavaPluginConvention> {
+java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions {
+        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+        kotlinOptions.languageVersion = "1.3"
+    }
 }
 
 detekt {
@@ -43,14 +46,13 @@ pluginBundle {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.4.0.201906121030-r")
-    implementation(kotlin("stdlib-jdk8", "1.5.21"))
     compileOnly(gradleApi())
     testImplementation("junit", "junit", "4.12")
     testImplementation(gradleTestKit())
-    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.6.0")
+    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.18.1")
 }
