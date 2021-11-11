@@ -1,6 +1,7 @@
 package com.cherryperry.gfe
 
 import org.gradle.api.Project
+import org.gradle.api.internal.provider.DefaultProvider
 import org.gradle.testfixtures.ProjectBuilder
 import org.junit.Assert
 import org.junit.Before
@@ -31,14 +32,17 @@ class PasswordReaderTest {
     @Test
     fun testProvider() {
         val result = PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()),
-            Callable { password.toCharArray() })
+            DefaultProvider { Callable { password.toCharArray() } })
         Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
     @Test
     fun testEnvironment() {
-        val result = PasswordReader.getPassword(project.logger, project,
-            TestEnvironment(mapOf(PasswordReader.ENVIRONMENT_KEY to password)), null)
+        val result = PasswordReader.getPassword(
+            project.logger, project,
+            TestEnvironment(mapOf(PasswordReader.ENVIRONMENT_KEY to password)),
+            DefaultProvider { null },
+        )
         Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
@@ -49,12 +53,13 @@ class PasswordReaderTest {
         FileOutputStream(temporaryFolder.newFile(PasswordReader.LOCAL_PROPERTIES_FILE)).use { stream ->
             properties.store(stream, null)
         }
-        val result = PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), null)
+        val result =
+            PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), DefaultProvider { null })
         Assert.assertArrayEquals(password.toCharArray(), result)
     }
 
     @Test(expected = IllegalStateException::class)
     fun testEmpty() {
-        PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), null)
+        PasswordReader.getPassword(project.logger, project, TestEnvironment(emptyMap()), DefaultProvider { null })
     }
 }

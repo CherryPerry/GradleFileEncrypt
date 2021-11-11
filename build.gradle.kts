@@ -24,13 +24,14 @@ java {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
-        kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
-        kotlinOptions.languageVersion = "1.3"
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        apiVersion = "1.3"
     }
 }
 
 detekt {
     config = files("detekt.yml")
+    baseline = file("detekt-baseline.xml")
 }
 
 pluginBundle {

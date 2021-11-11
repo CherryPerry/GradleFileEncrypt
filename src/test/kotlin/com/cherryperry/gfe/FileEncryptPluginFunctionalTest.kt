@@ -1,11 +1,13 @@
 package com.cherryperry.gfe
 
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.lib.Constants
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.UnexpectedBuildFailure
+import org.gradle.util.GradleVersion
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -37,15 +39,12 @@ class FileEncryptPluginFunctionalTest(
         @JvmStatic
         @Parameterized.Parameters(name = "Gradle version: {0}")
         fun gradleVersions(): Collection<Array<Any>> = arrayListOf(
-            arrayOf<Any>("5.0"),
-            arrayOf<Any>("5.1.1"),
-            arrayOf<Any>("5.2.1"),
-            arrayOf<Any>("5.3.1"),
-            arrayOf<Any>("5.4.1"),
-            arrayOf<Any>("5.5.1"),
-            arrayOf<Any>("6.0.1"),
-            arrayOf<Any>("6.1.1"),
-            arrayOf<Any>("6.2.2")
+            arrayOf<Any>("6.8.3"),
+            arrayOf<Any>("6.9.1"),
+            arrayOf<Any>("7.0.2"),
+            arrayOf<Any>("7.1.1"),
+            arrayOf<Any>("7.2"),
+            arrayOf<Any>("7.3"),
         )
     }
 
@@ -73,7 +72,13 @@ class FileEncryptPluginFunctionalTest(
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
-            .withArguments(mutableListOf("--stacktrace") + args)
+            .withArguments(
+                mutableListOf("--stacktrace").apply {
+                    if (GradleVersion.version(gradleVersion) >= GradleVersion.version("7.0")) {
+                        add("--configuration-cache")
+                    }
+                    addAll(args)
+                })
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
             .build()
@@ -92,11 +97,10 @@ class FileEncryptPluginFunctionalTest(
         }
         return """
             $EMPTY_BUILD_GRADLE
-            gradleFileEncrypt
-            {
-                files '${file.relativeTo(temporaryFolder.root).linuxPath}'
+            gradleFileEncrypt {
+                plainFiles.from('${file.relativeTo(temporaryFolder.root).linuxPath}')
                 $mapping
-                passwordProvider { return '$password'.toCharArray() }
+                passwordProvider = { return '$password'.toCharArray() }
             }
         """.trimIndent()
     }
@@ -283,7 +287,7 @@ class FileEncryptPluginFunctionalTest(
         // test single file in ignore list is ignored
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
-        val gitIgnoreFile = temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        val gitIgnoreFile = temporaryFolder.newFile(Constants.DOT_GIT_IGNORE)
         gitIgnoreFile.appendText(testFile.name)
         Git.init().setDirectory(temporaryFolder.root).call()
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME).let {
@@ -297,7 +301,7 @@ class FileEncryptPluginFunctionalTest(
         val testDirectory = TemporaryFolder(temporaryFolder.newFolder())
         testDirectory.create()
         val testFile = testDirectory.newFile()
-        val gitIgnoreFile = testDirectory.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        val gitIgnoreFile = testDirectory.newFile(Constants.DOT_GIT_IGNORE)
         gitIgnoreFile.appendText(testFile.name)
         Git.init().setDirectory(temporaryFolder.root).call()
         createRunner(buildGradleConfigurationWithFiles(testFile), FileEncryptPlugin.TASK_GIT_IGNORE_NAME).let {
@@ -309,7 +313,7 @@ class FileEncryptPluginFunctionalTest(
     fun testFileIsNotIgnoredByAnyGitIgnore() {
         // test task is failed when file is not ignored
         val testFile = temporaryFolder.newFile()
-        temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        temporaryFolder.newFile(Constants.DOT_GIT_IGNORE)
         Git.init().setDirectory(temporaryFolder.root).call()
         // don't know why exception instead of TaskOutcome.FAILED
         expectedException.expect(UnexpectedBuildFailure::class.java)
@@ -320,7 +324,7 @@ class FileEncryptPluginFunctionalTest(
     fun testFileIsNotIgnoredByTemplateGitIgnore() {
         // test task is failed when file is not ignored
         val testFile = temporaryFolder.newFile("file2.plain")
-        val gitIgnoreFile = temporaryFolder.newFile(CheckGitIgnoreTask.FILE_GIT_IGNORE)
+        val gitIgnoreFile = temporaryFolder.newFile(Constants.DOT_GIT_IGNORE)
         gitIgnoreFile.appendText("!*.encrypted")
         Git.init().setDirectory(temporaryFolder.root).call()
         // don't know why exception instead of TaskOutcome.FAILED

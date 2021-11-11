@@ -7,7 +7,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
-import java.util.concurrent.Callable
 
 /**
  * Test valid configuration of input and output properties of task.
@@ -24,24 +23,20 @@ class FileEncryptTaskConfigurationTest {
 
     private lateinit var project: Project
     private lateinit var extension: FileEncryptPluginExtension
-    private lateinit var encryptTask: EncryptTask
-    private lateinit var decryptTask: DecryptTask
-    private lateinit var checkGitTask: CheckGitIgnoreTask
+    private val encryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask }
+    private val decryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_DECRYPT_NAME) as DecryptTask }
 
     @Before
     fun before() {
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         project.pluginManager.apply(PLUGIN_NAME)
         extension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
-        extension.passwordProvider = Callable { PASSWORD.toCharArray() }
-        encryptTask = project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask
-        decryptTask = project.tasks.getByName(FileEncryptPlugin.TASK_DECRYPT_NAME) as DecryptTask
-        checkGitTask = project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask
+        extension.passwordProvider.set { PASSWORD.toCharArray() }
+        project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask
     }
 
     @Test
     fun testEncryptTaskConfigurationEmpty() {
-        extension.files = emptyArray()
         val inputs = encryptTask.plainFiles.toList()
         Assert.assertEquals(0, inputs.size)
         val outputs = encryptTask.encryptedFiles.toList()
@@ -50,7 +45,7 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testEncryptTaskConfigurationSingle() {
-        extension.files = arrayOf("1.txt")
+        extension.plainFiles.from("1.txt")
         val inputs = encryptTask.plainFiles.toList()
         Assert.assertEquals(1, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt"))
@@ -61,7 +56,7 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testEncryptTaskConfigurationMultiple() {
-        extension.files = arrayOf("1.txt", "2.txt")
+        extension.plainFiles.from("1.txt", "2.txt")
         val inputs = encryptTask.plainFiles.toList()
         Assert.assertEquals(2, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt"))
@@ -74,8 +69,8 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testEncryptTaskConfigurationMapping() {
-        extension.files = arrayOf("1.txt", "2.txt")
-        extension.mapping = mapOf("2.txt" to "3.txt")
+        extension.plainFiles.from("1.txt", "2.txt")
+        extension.mapping.put("2.txt", "3.txt")
         val inputs = encryptTask.plainFiles.toList()
         Assert.assertEquals(2, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt"))
@@ -88,7 +83,6 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testDecryptTaskConfigurationEmpty() {
-        extension.files = emptyArray()
         val inputs = decryptTask.encryptedFiles.toList()
         Assert.assertEquals(0, inputs.size)
         val outputs = encryptTask.plainFiles.toList()
@@ -97,7 +91,7 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testDecryptTaskConfigurationSingle() {
-        extension.files = arrayOf("1.txt")
+        extension.plainFiles.from("1.txt")
         val inputs = encryptTask.encryptedFiles.toList()
         Assert.assertEquals(1, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))
@@ -108,7 +102,7 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testDecryptTaskConfigurationMultiple() {
-        extension.files = arrayOf("1.txt", "2.txt")
+        extension.plainFiles.from("1.txt", "2.txt")
         val inputs = encryptTask.encryptedFiles.toList()
         Assert.assertEquals(2, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))
@@ -121,8 +115,8 @@ class FileEncryptTaskConfigurationTest {
 
     @Test
     fun testDecryptTaskConfigurationMapping() {
-        extension.files = arrayOf("1.txt", "2.txt")
-        extension.mapping = mapOf("2.txt" to "3.txt")
+        extension.plainFiles.from("1.txt", "2.txt")
+        extension.mapping.put("2.txt", "3.txt")
         val inputs = encryptTask.encryptedFiles.toList()
         Assert.assertEquals(2, inputs.size)
         Assert.assertTrue(inputs[0].endsWith("1.txt.${FileNameTransformer.EXTENSION}"))

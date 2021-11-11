@@ -1,6 +1,10 @@
 package com.cherryperry.gfe
 
-object SystemEnvironment : Environment {
+import org.gradle.api.provider.ProviderFactory
 
-    override fun get(key: String): String? = System.getenv(key)
+class SystemEnvironment(
+    private val providers: ProviderFactory,
+) : Environment {
+    override fun get(key: String): String? =
+        providers.systemProperty(key).forUseAtConfigurationTime().orNull
 }
