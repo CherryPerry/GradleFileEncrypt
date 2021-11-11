@@ -7,6 +7,7 @@ import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.UnexpectedBuildFailure
+import org.gradle.util.GradleVersion
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -71,7 +72,13 @@ class FileEncryptPluginFunctionalTest(
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
-            .withArguments(listOf("--stacktrace", "--configuration-cache") + args)
+            .withArguments(
+                mutableListOf("--stacktrace").apply {
+                    if (GradleVersion.version(gradleVersion) >= GradleVersion.version("7.0")) {
+                        add("--configuration-cache")
+                    }
+                    addAll(args)
+                })
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
             .build()
