@@ -71,7 +71,6 @@ class FileEncryptPluginFunctionalTest(
             .withPluginClasspath()
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
-            // --configuration-cache only when supported
             .withArguments(listOf("--stacktrace", "--configuration-cache") + args)
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
