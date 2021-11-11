@@ -7,7 +7,6 @@ import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.UnexpectedBuildFailure
-import org.gradle.util.GradleVersion
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -39,21 +38,12 @@ class FileEncryptPluginFunctionalTest(
         @JvmStatic
         @Parameterized.Parameters(name = "Gradle version: {0}")
         fun gradleVersions(): Collection<Array<Any>> = arrayListOf(
-            arrayOf<Any>("6.0.1"),
-            arrayOf<Any>("6.1.1"),
-            arrayOf<Any>("6.2.2"),
-            arrayOf<Any>("6.5"),
-            arrayOf<Any>("6.3"),
-            arrayOf<Any>("6.4.1"),
-            arrayOf<Any>("6.5.1"),
-            arrayOf<Any>("6.6.1"),
-            arrayOf<Any>("6.7.1"),
-            arrayOf<Any>("6.8.3"),
             arrayOf<Any>("6.8.3"),
             arrayOf<Any>("6.9.1"),
             arrayOf<Any>("7.0.2"),
             arrayOf<Any>("7.1.1"),
-            arrayOf<Any>("7.2")
+            arrayOf<Any>("7.2"),
+            arrayOf<Any>("7.3"),
         )
     }
 
@@ -82,13 +72,7 @@ class FileEncryptPluginFunctionalTest(
             .withProjectDir(temporaryFolder.root)
             .withGradleVersion(gradleVersion)
             // --configuration-cache only when supported
-            .withArguments(
-                mutableListOf("--stacktrace").apply {
-                    if (GradleVersion.version(gradleVersion) >= GradleVersion.version("6.5")) {
-                        add("--configuration-cache")
-                    }
-                    addAll(args)
-                })
+            .withArguments(listOf("--stacktrace", "--configuration-cache") + args)
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
             .build()

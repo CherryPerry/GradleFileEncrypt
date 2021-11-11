@@ -64,7 +64,9 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
     private fun failTaskIfAnyFilesLeft(relativePlainFiles: Collection<String>) {
         if (relativePlainFiles.isNotEmpty()) {
             relativePlainFiles.forEach { plainFile ->
-                logger.error("${projectDir.file(plainFile)} is not ignored by any ${Constants.DOT_GIT_IGNORE} files of project")
+                logger.error(
+                    "${projectDir.file(plainFile)} is not ignored by any ${Constants.DOT_GIT_IGNORE} files of project"
+                )
             }
             throw GradleException("Some plain files are not ignored by git, see log above")
         }

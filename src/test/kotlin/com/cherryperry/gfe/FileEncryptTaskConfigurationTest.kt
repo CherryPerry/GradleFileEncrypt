@@ -25,7 +25,6 @@ class FileEncryptTaskConfigurationTest {
     private lateinit var extension: FileEncryptPluginExtension
     private val encryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask }
     private val decryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_DECRYPT_NAME) as DecryptTask }
-    private val checkGitTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask }
 
     @Before
     fun before() {
@@ -33,6 +32,7 @@ class FileEncryptTaskConfigurationTest {
         project.pluginManager.apply(PLUGIN_NAME)
         extension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
         extension.passwordProvider.set { PASSWORD.toCharArray() }
+        project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask
     }
 
     @Test
