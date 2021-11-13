@@ -34,5 +34,4 @@ open class FileEncryptExtension @Inject constructor(
      */
     val passwordProvider: Property<Callable<CharArray>> =
         objectFactory.property(Callable::class.java) as Property<Callable<CharArray>>
-
 }
