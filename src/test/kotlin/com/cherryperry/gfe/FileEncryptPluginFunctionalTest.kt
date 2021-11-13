@@ -87,11 +87,17 @@ class FileEncryptPluginFunctionalTest(
     private fun buildGradleConfigurationWithFiles(
         file: File,
         password: String = PASSWORD,
-        mappedFile: File? = null
+        mappedFile: File? = null,
+        hasPassword: Boolean = true,
     ): String {
         val mapping = if (mappedFile != null) {
             "mapping = ['${file.relativeTo(temporaryFolder.root).linuxPath}'" +
                 ":'${mappedFile.relativeTo(temporaryFolder.root).linuxPath}']"
+        } else {
+            ""
+        }
+        val passwordConfig = if (hasPassword) {
+            "passwordProvider = { return '$password'.toCharArray() }"
         } else {
             ""
         }
@@ -100,7 +106,7 @@ class FileEncryptPluginFunctionalTest(
             gradleFileEncrypt {
                 plainFiles.from('${file.relativeTo(temporaryFolder.root).linuxPath}')
                 $mapping
-                passwordProvider = { return '$password'.toCharArray() }
+                $passwordConfig
             }
         """.trimIndent()
     }
@@ -118,6 +124,28 @@ class FileEncryptPluginFunctionalTest(
         // test task without input must be skipped
         createRunner(EMPTY_BUILD_GRADLE, FileEncryptPlugin.TASK_DECRYPT_NAME).let {
             Assert.assertEquals(TaskOutcome.NO_SOURCE, it[FileEncryptPlugin.TASK_DECRYPT_NAME].outcome)
+        }
+    }
+
+    @Test
+    fun testCanConfigureWithoutPassword() {
+        // test project should be configurable without password
+        val testFile = temporaryFolder.newFile()
+        testFile.writeText(CONTENT_1)
+        createRunner(buildGradleConfigurationWithFiles(testFile, hasPassword = false), "tasks").let {
+            Assert.assertEquals(TaskOutcome.SUCCESS, it["tasks"].outcome)
+        }
+    }
+
+    @Test
+    fun testThrowsExceptionWhenRunWithoutPassword() {
+        val testFile = temporaryFolder.newFile()
+        testFile.writeText(CONTENT_1)
+        createRunner(
+            buildGradleConfigurationWithFiles(testFile, hasPassword = false),
+            FileEncryptPlugin.TASK_ENCRYPT_NAME,
+        ).let {
+            Assert.assertEquals(TaskOutcome.FAILED, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
     }
 

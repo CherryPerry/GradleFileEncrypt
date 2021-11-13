@@ -7,6 +7,7 @@ import com.cherryperry.gfe.base.SecretKeyAware
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
@@ -26,7 +27,7 @@ open class DecryptTask @Inject constructor(
 ) : BaseTask(), SecretKeyAware, PlainFilesAware, EncryptedFilesAware {
 
     @get:Input
-    override val key: SecretKey? by lazy { fileEncryptPluginExtension.secretKey(project) }
+    override val key: Provider<SecretKey> = fileEncryptPluginExtension.secretKey(project)
 
     @get:[InputFiles SkipWhenEmpty]
     override val encryptedFiles: FileCollection by lazy { fileEncryptPluginExtension.encryptedFiles(project) }
@@ -40,7 +41,7 @@ open class DecryptTask @Inject constructor(
 
     @TaskAction
     open fun decrypt(incrementalTaskInputs: IncrementalTaskInputs) {
-        val key = requireNotNull(key)
+        val key = key.get()
         if (incrementalTaskInputs.isIncremental) {
             logger.info("Input is incremental")
             incrementalTaskInputs.outOfDate { inputFileDetails ->
