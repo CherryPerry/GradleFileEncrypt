@@ -58,7 +58,8 @@ class FileEncryptPluginFunctionalTest(
 
     private fun createRunner(
         buildGradleContent: String = EMPTY_BUILD_GRADLE,
-        vararg args: String
+        vararg args: String,
+        expectFail: Boolean = false,
     ): BuildResult {
         val buildGradle = File(temporaryFolder.root, FILE_BUILD_GRADLE)
         buildGradle.writeText(buildGradleContent)
@@ -81,7 +82,9 @@ class FileEncryptPluginFunctionalTest(
                 })
             .forwardStdOutput(System.out.writer())
             .forwardStdError(System.err.writer())
-            .build()
+            .run {
+                if (expectFail) buildAndFail() else build()
+            }
     }
 
     private fun buildGradleConfigurationWithFiles(
@@ -142,8 +145,9 @@ class FileEncryptPluginFunctionalTest(
         val testFile = temporaryFolder.newFile()
         testFile.writeText(CONTENT_1)
         createRunner(
-            buildGradleConfigurationWithFiles(testFile, hasPassword = false),
-            FileEncryptPlugin.TASK_ENCRYPT_NAME,
+            buildGradleContent = buildGradleConfigurationWithFiles(testFile, hasPassword = false),
+            expectFail = true,
+            args = arrayOf(FileEncryptPlugin.TASK_ENCRYPT_NAME),
         ).let {
             Assert.assertEquals(TaskOutcome.FAILED, it[FileEncryptPlugin.TASK_ENCRYPT_NAME].outcome)
         }
