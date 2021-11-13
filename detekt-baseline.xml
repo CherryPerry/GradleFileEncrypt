@@ -2,8 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>NoBlankLineBeforeRbrace:com.cherryperry.gfe.FileEncryptPluginExtension.kt:37</ID>
-    <ID>NoBlankLineBeforeRbrace:com.cherryperry.gfe.base.EncryptedFilesAwareDelegate.kt:25</ID>
+    <ID>NoBlankLineBeforeRbrace:com.cherryperry.gfe.FileEncryptExtension.kt:37</ID>
     <ID>NoBlankLineBeforeRbrace:com.cherryperry.gfe.base.SecretKeyAwareDelegate.kt:32</ID>
   </CurrentIssues>
 </SmellBaseline>

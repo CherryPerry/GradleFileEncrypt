@@ -15,7 +15,7 @@ class FileEncryptPluginConfigurationTest {
         val project = ProjectBuilder.builder().build()
         project.pluginManager.apply(PLUGIN_NAME)
         Assert.assertTrue(project.plugins.findPlugin(PLUGIN_NAME) is FileEncryptPlugin)
-        Assert.assertTrue(project.extensions.findByName(FileEncryptPlugin.EXTENSION_NAME) is FileEncryptPluginExtension)
+        Assert.assertTrue(project.extensions.findByName(FileEncryptPlugin.EXTENSION_NAME) is FileEncryptExtension)
         // test task registered lazy
         // see https://docs.gradle.org/current/userguide/task_configuration_avoidance.html
         project.tasks.named(FileEncryptPlugin.TASK_ENCRYPT_NAME)

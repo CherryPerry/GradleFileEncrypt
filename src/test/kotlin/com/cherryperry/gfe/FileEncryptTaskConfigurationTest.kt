@@ -22,7 +22,7 @@ class FileEncryptTaskConfigurationTest {
     var temporaryFolder = TemporaryFolder()
 
     private lateinit var project: Project
-    private lateinit var extension: FileEncryptPluginExtension
+    private lateinit var extension: FileEncryptExtension
     private val encryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_ENCRYPT_NAME) as EncryptTask }
     private val decryptTask by lazy { project.tasks.getByName(FileEncryptPlugin.TASK_DECRYPT_NAME) as DecryptTask }
 
@@ -30,7 +30,7 @@ class FileEncryptTaskConfigurationTest {
     fun before() {
         project = ProjectBuilder.builder().withProjectDir(temporaryFolder.root).build()
         project.pluginManager.apply(PLUGIN_NAME)
-        extension = project.extensions.getByType(FileEncryptPluginExtension::class.java)
+        extension = project.extensions.getByType(FileEncryptExtension::class.java)
         extension.passwordProvider.set { PASSWORD.toCharArray() }
         project.tasks.getByName(FileEncryptPlugin.TASK_GIT_IGNORE_NAME) as CheckGitIgnoreTask
     }

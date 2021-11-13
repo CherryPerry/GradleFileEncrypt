@@ -13,7 +13,7 @@ open class FileEncryptPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        project.extensions.create(EXTENSION_NAME, FileEncryptPluginExtension::class.java)
+        project.extensions.create(EXTENSION_NAME, FileEncryptExtension::class.java)
         project.tasks.register(TASK_ENCRYPT_NAME, EncryptTask::class.java)
         project.tasks.register(TASK_DECRYPT_NAME, DecryptTask::class.java)
         project.tasks.register(TASK_GIT_IGNORE_NAME, CheckGitIgnoreTask::class.java)

@@ -2,7 +2,6 @@ package com.cherryperry.gfe
 
 import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.EncryptedFilesAware
-import com.cherryperry.gfe.base.EncryptedFilesAwareDelegate
 import com.cherryperry.gfe.base.PlainFilesAware
 import com.cherryperry.gfe.base.SecretKeyAware
 import com.cherryperry.gfe.base.SecretKeyAwareDelegate
@@ -31,7 +30,7 @@ open class DecryptTask @Inject constructor(
     override val key: SecretKey? by SecretKeyAwareDelegate(this)
 
     @get:[InputFiles SkipWhenEmpty]
-    override val encryptedFiles: FileCollection by EncryptedFilesAwareDelegate(this)
+    override val encryptedFiles: FileCollection by lazy { fileEncryptPluginExtension.encryptedFiles(project) }
 
     @get:OutputFiles
     override val plainFiles: FileCollection = fileEncryptPluginExtension.plainFiles

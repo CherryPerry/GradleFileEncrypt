@@ -7,7 +7,7 @@ import org.gradle.api.provider.Property
 import java.util.concurrent.Callable
 import javax.inject.Inject
 
-open class FileEncryptPluginExtension @Inject constructor(
+open class FileEncryptExtension @Inject constructor(
     objectFactory: ObjectFactory,
 ) {
 
