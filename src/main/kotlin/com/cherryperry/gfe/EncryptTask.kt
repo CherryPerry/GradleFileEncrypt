@@ -4,7 +4,6 @@ import com.cherryperry.gfe.base.BaseTask
 import com.cherryperry.gfe.base.EncryptedFilesAware
 import com.cherryperry.gfe.base.PlainFilesAware
 import com.cherryperry.gfe.base.SecretKeyAware
-import com.cherryperry.gfe.base.SecretKeyAwareDelegate
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
@@ -29,7 +28,7 @@ open class EncryptTask @Inject constructor(
 ) : BaseTask(), SecretKeyAware, PlainFilesAware, EncryptedFilesAware {
 
     @get:Input
-    override val key: SecretKey? by SecretKeyAwareDelegate(this)
+    override val key: SecretKey? by lazy { fileEncryptPluginExtension.secretKey(project) }
 
     @get:[InputFiles SkipWhenEmpty PathSensitive(RELATIVE)]
     override val plainFiles: FileCollection = fileEncryptPluginExtension.plainFiles
