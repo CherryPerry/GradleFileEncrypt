@@ -7,6 +7,7 @@ import com.cherryperry.gfe.base.SecretKeyAware
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -16,7 +17,8 @@ import org.gradle.api.tasks.PathSensitivity.RELATIVE
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.incremental.IncrementalTaskInputs
-import org.gradle.workers.IsolationMode
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import java.io.File
 import javax.crypto.Cipher
@@ -65,21 +67,27 @@ open class EncryptTask @Inject constructor(
     }
 
     private fun enqueueEncryptionRunnable(key: SecretKey, plainFile: File, encryptedFile: File) {
-        workerExecutor.submit(EncryptTaskRunnable::class.java) { config ->
-            config.isolationMode = IsolationMode.NONE
-            config.params(key, plainFile, encryptedFile)
+        workerExecutor.noIsolation().submit(Action::class.java) { params ->
+            params.key.set(key)
+            params.plainFile.set(plainFile)
+            params.encryptedFile.set(encryptedFile)
         }
     }
 
-    class EncryptTaskRunnable @Inject constructor(
-        private val key: SecretKey,
-        private val plainFile: File,
-        private val encryptedFile: File
-    ) : Runnable {
+    interface Params : WorkParameters {
+        val key: Property<SecretKey>
+        val plainFile: Property<File>
+        val encryptedFile: Property<File>
+    }
 
-        private val logger: Logger = Logging.getLogger(EncryptTaskRunnable::class.java)
+    abstract class Action : WorkAction<Params> {
+        private val logger: Logger = Logging.getLogger(Action::class.java)
 
-        override fun run() {
+        private val plainFile: File get() = parameters.plainFile.get()
+        private val encryptedFile: File get() = parameters.encryptedFile.get()
+        private val key: SecretKey get() = parameters.key.get()
+
+        override fun execute() {
             logger.info("Encrypting file: ${plainFile.absolutePath}")
             if (!plainFile.exists() || !plainFile.canRead()) {
                 logger.error("${plainFile.name} does not exist or can't be read")
