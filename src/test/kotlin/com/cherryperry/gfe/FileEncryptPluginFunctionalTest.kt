@@ -9,6 +9,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import org.gradle.testkit.runner.UnexpectedBuildFailure
 import org.gradle.util.GradleVersion
 import org.junit.Assert
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
@@ -216,6 +217,12 @@ class FileEncryptPluginFunctionalTest(
     }
 
     @Test
+    @Ignore(
+        """
+        Gradle can remove output files to regenerate them via InputChanges API (see docs).
+        It means that IV and the encrypted file will be different on the second run.
+        """
+    )
     fun testEncryptSameResultTwiceNoCache() {
         // 2 passes of encryption task should produce same result
         val testFile = temporaryFolder.newFile()

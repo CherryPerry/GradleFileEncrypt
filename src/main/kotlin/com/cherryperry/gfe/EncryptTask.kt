@@ -5,6 +5,7 @@ import com.cherryperry.gfe.base.EncryptedFilesAware
 import com.cherryperry.gfe.base.PlainFilesAware
 import com.cherryperry.gfe.base.SecretKeyAware
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileType
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 import org.gradle.api.provider.Property
@@ -12,11 +13,10 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity.RELATIVE
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.incremental.IncrementalTaskInputs
+import org.gradle.work.ChangeType
+import org.gradle.work.InputChanges
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
@@ -33,7 +33,7 @@ open class EncryptTask @Inject constructor(
     @get:Input
     override val key: Provider<SecretKey> = fileEncryptPluginExtension.secretKey(project)
 
-    @get:[InputFiles SkipWhenEmpty PathSensitive(RELATIVE)]
+    @get:[InputFiles SkipWhenEmpty]
     override val plainFiles: FileCollection = fileEncryptPluginExtension.plainFiles
 
     @get:OutputFiles
@@ -44,19 +44,27 @@ open class EncryptTask @Inject constructor(
     }
 
     @TaskAction
-    open fun encrypt(incrementalTaskInputs: IncrementalTaskInputs) {
+    open fun encrypt(inputChanges: InputChanges) {
         val key = key.get()
-        if (incrementalTaskInputs.isIncremental) {
+        if (inputChanges.isIncremental) {
             logger.info("Input is incremental")
-            incrementalTaskInputs.outOfDate {
-                logger.info("Out of date: ${it.file}")
-                val plainFile = it.file
-                val index = plainFiles.indexOf(plainFile)
-                val encryptedFile = encryptedFiles.asSequence().filterIndexed { i, _ -> i == index }.first()
-                enqueueEncryptionRunnable(key, plainFile, encryptedFile)
-            }
-            incrementalTaskInputs.removed {
-                // Do nothing on file removal, user must delete encrypted files by himself
+            inputChanges.getFileChanges(plainFiles).forEach { change ->
+                if (change.fileType == FileType.DIRECTORY) return@forEach
+                logger.info("Out of date: ${change.normalizedPath}")
+                when (change.changeType) {
+                    ChangeType.ADDED,
+                    ChangeType.MODIFIED -> {
+                        val plainFile = change.file
+                        // TODO wtf? does it work properly?
+                        val index = plainFiles.indexOf(plainFile)
+                        val encryptedFile = encryptedFiles.asSequence().filterIndexed { i, _ -> i == index }.first()
+                        enqueueEncryptionRunnable(key, plainFile, encryptedFile)
+                    }
+                    ChangeType.REMOVED,
+                    null ->
+                        // Do nothing on file removal, user must delete encrypted files by themselves
+                        Unit
+                }
             }
         } else {
             logger.info("Input is not incremental")
