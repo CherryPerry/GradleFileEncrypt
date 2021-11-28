@@ -9,9 +9,9 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.5.31"
     id("java-gradle-plugin")
-    id("com.github.ben-manes.versions") version "0.28.0"
+    id("com.github.ben-manes.versions") version "0.39.0"
     id("io.gitlab.arturbosch.detekt") version "1.18.1"
-    id("com.gradle.plugin-publish") version "0.10.1"
+    id("com.gradle.plugin-publish") version "0.18.0"
 }
 
 group = "com.cherryperry.gfe"
@@ -51,9 +51,9 @@ repositories {
 }
 
 dependencies {
-    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.4.0.201906121030-r")
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.13.0.202109080827-r")
     compileOnly(gradleApi())
-    testImplementation("junit", "junit", "4.12")
+    testImplementation("junit", "junit", "4.13.2")
     testImplementation(gradleTestKit())
     detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.18.1")
 }
