@@ -1,11 +1,10 @@
-name: Build
+name: Release
 on:
-  push:
-    branches:
-      - master
-  pull_request:
+  workflow_dispatch:
+  release:
+    types: [ created ]
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,4 +15,7 @@ jobs:
       - uses: gradle/wrapper-validation-action@v1
       - uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: |
+            publishPlugins
+            -Pgradle.publish.key=${{ secrets.GRADLE_PLUGIN_KEY }}
+            -Pgradle.publish.secret=${{ secrets.GRADLE_PLUGIN_SECRET }}
