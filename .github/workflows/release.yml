@@ -19,3 +19,4 @@ jobs:
             publishPlugins
             -Pgradle.publish.key=${{ secrets.GRADLE_PLUGIN_KEY }}
             -Pgradle.publish.secret=${{ secrets.GRADLE_PLUGIN_SECRET }}
+            --no-configuration-cache
