@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "com.cherryperry.gfe"
-version = "1.4.0"
+version = "2.0.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
