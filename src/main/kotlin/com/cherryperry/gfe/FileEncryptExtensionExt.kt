@@ -3,6 +3,7 @@ package com.cherryperry.gfe
 import com.cherryperry.gfe.providers.DelegatePasswordProvider
 import com.cherryperry.gfe.providers.EnvironmentPasswordProvider
 import com.cherryperry.gfe.providers.PropertiesPasswordProvider
+import com.cherryperry.gfe.providers.SystemPropertyPasswordProvider
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.Provider
@@ -23,6 +24,7 @@ internal fun FileEncryptExtension.secretKey(project: Project): Provider<SecretKe
         val providers = listOf(
             DelegatePasswordProvider(this),
             EnvironmentPasswordProvider(project.providers),
+            SystemPropertyPasswordProvider(project.providers),
             PropertiesPasswordProvider(project.providers, project.layout),
         )
 
