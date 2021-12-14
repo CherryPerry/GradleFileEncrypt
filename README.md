@@ -36,7 +36,7 @@ apply plugin: 'com.cherryperry.gradle-file-encrypt'
 ### Password setup
 
 Set password `gfe.password` in `local.properties` file in project root
-or `GFE_PASSWORD` environment variable.
+or `GFE_PASSWORD` environment variable or `-DGFE_PASSWORD` Gradle system property.
 
 You can create your own password provider via `passwordProvider`.
 
