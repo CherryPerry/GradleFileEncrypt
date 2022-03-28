@@ -50,7 +50,7 @@ gradleFileEncrypt {
     mapping = [ 'signing.properties' : 'secret/signing.properties' ]
     // (optional) setup password provider
     // if provided one is not secure enough for you
-    passwordProvider { return 'YOUR LOGIC HERE'.toCharArray() }
+    passwordProvider = { return 'YOUR LOGIC HERE'.toCharArray() }
 }
 ```
 
@@ -62,8 +62,8 @@ and value is target file without encrypted extension.
 
 ```groovy
 gradleFileEncrypt {
-    files 'src/main/resources/secure.properties'
-    mapping = ['src/main/resources/secure.properties':'secure/keys']
+    plainFiles.from('src/main/resources/secure.properties')
+    mapping = [ 'src/main/resources/secure.properties' : 'secure/keys' ]
 }
 ```
 
