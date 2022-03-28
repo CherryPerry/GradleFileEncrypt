@@ -26,7 +26,7 @@ buildscript {
         maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:2.0.0'
+        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:2.0.1'
     }
 }
 
