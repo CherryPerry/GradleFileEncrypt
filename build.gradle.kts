@@ -9,9 +9,10 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.5.31"
     id("java-gradle-plugin")
+    id("maven-publish")
     id("com.github.ben-manes.versions") version "0.42.0"
     id("io.gitlab.arturbosch.detekt") version "1.20.0"
-    id("com.gradle.plugin-publish") version "0.18.0"
+    id("com.gradle.plugin-publish") version "1.0.0-rc-1"
 }
 
 group = "com.cherryperry.gfe"
@@ -34,16 +35,19 @@ detekt {
     baseline = file("detekt-baseline.xml")
 }
 
+gradlePlugin {
+    plugins.register("gradleFileEncryptPlugin") {
+        id = "com.cherryperry.gradle-file-encrypt"
+        displayName = "Gradle file encrypt"
+        description = "Simply encrypt your sensitive data in repository with password"
+        implementationClass = "com.cherryperry.gfe.FileEncryptPlugin"
+    }
+}
+
 pluginBundle {
     website = "https://github.com/CherryPerry/GradleFileEncrypt"
     vcsUrl = "https://github.com/CherryPerry/GradleFileEncrypt.git"
-    description = "Simply encrypt your sensitive data in repository with password"
     tags = listOf("encryption", "cryptography")
-
-    plugins.create("gradleFileEncryptPlugin") {
-        id = "com.cherryperry.gradle-file-encrypt"
-        displayName = "Gradle file encrypt"
-    }
 }
 
 repositories {
