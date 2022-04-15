@@ -10,7 +10,7 @@ plugins {
     kotlin("jvm") version "1.5.31"
     id("java-gradle-plugin")
     id("com.github.ben-manes.versions") version "0.42.0"
-    id("io.gitlab.arturbosch.detekt") version "1.18.1"
+    id("io.gitlab.arturbosch.detekt") version "1.20.0"
     id("com.gradle.plugin-publish") version "0.18.0"
 }
 
@@ -55,5 +55,5 @@ dependencies {
     compileOnly(gradleApi())
     testImplementation("junit", "junit", "4.13.2")
     testImplementation(gradleTestKit())
-    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.18.1")
+    detektPlugins("io.gitlab.arturbosch.detekt", "detekt-formatting", "1.20.0")
 }
