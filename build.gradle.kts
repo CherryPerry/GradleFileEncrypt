@@ -9,7 +9,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.5.31"
     id("java-gradle-plugin")
-    id("com.github.ben-manes.versions") version "0.39.0"
+    id("com.github.ben-manes.versions") version "0.42.0"
     id("io.gitlab.arturbosch.detekt") version "1.18.1"
     id("com.gradle.plugin-publish") version "0.18.0"
 }
