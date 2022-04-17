@@ -55,7 +55,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.eclipse.jgit", "org.eclipse.jgit", "5.13.0.202109080827-r")
+    implementation("org.eclipse.jgit", "org.eclipse.jgit", "6.1.0.202203080745-r")
     compileOnly(gradleApi())
     testImplementation("junit", "junit", "4.13.2")
     testImplementation(gradleTestKit())

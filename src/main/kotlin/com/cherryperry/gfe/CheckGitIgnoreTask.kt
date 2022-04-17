@@ -13,6 +13,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.io.IOException
 
 /**
@@ -40,32 +41,33 @@ open class CheckGitIgnoreTask : BaseTask(), PlainFilesAware {
         } catch (exception: IOException) {
             throw GradleException("Git repository was not found at path $projectDir", exception)
         }
-        val plainFiles = plainFiles.mapNotNull { it.toRelativeString(projectDir.asFile) }.toHashSet()
+        val plainFiles = plainFiles.toHashSet()
         TreeWalk(git.repository).use { treeWalk -> walkThrough(git, treeWalk, plainFiles) }
         failTaskIfAnyFilesLeft(plainFiles)
     }
 
-    private fun walkThrough(git: Git, treeWalk: TreeWalk, plainFiles: MutableCollection<String>) {
+    private fun walkThrough(git: Git, treeWalk: TreeWalk, plainFiles: MutableCollection<File>) {
         val fileTreeIterator = FileTreeIterator(git.repository)
         fileTreeIterator.setWalkIgnoredDirectories(true)
         treeWalk.addTree(fileTreeIterator)
         treeWalk.isRecursive = true
         while (treeWalk.next() && plainFiles.isNotEmpty()) {
             if (treeWalk.getTree(WorkingTreeIterator::class.java).isEntryIgnored) {
-                val path = treeWalk.pathString
-                val removed = plainFiles.remove(path)
+                val file = projectDir.file(treeWalk.pathString).asFile
+                val removed = plainFiles.remove(file)
                 if (removed) {
-                    logger.info("$path is ignored")
+                    logger.info("$file is ignored")
                 }
             }
         }
     }
 
-    private fun failTaskIfAnyFilesLeft(relativePlainFiles: Collection<String>) {
+    private fun failTaskIfAnyFilesLeft(relativePlainFiles: Collection<File>) {
         if (relativePlainFiles.isNotEmpty()) {
             relativePlainFiles.forEach { plainFile ->
+                val fileForLog = plainFile.relativeToOrNull(projectDir.asFile) ?: plainFile
                 logger.error(
-                    "${projectDir.file(plainFile)} is not ignored by any ${Constants.DOT_GIT_IGNORE} files of project"
+                    "$fileForLog is not ignored by any ${Constants.DOT_GIT_IGNORE} files of project"
                 )
             }
             throw GradleException("Some plain files are not ignored by git, see log above")

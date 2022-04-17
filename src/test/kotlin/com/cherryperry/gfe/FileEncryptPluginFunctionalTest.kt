@@ -41,11 +41,12 @@ class FileEncryptPluginFunctionalTest(
         @Parameterized.Parameters(name = "Gradle version: {0}")
         fun gradleVersions(): Collection<Array<Any>> = arrayListOf(
             arrayOf<Any>("6.8.3"),
-            arrayOf<Any>("6.9.1"),
+            arrayOf<Any>("6.9.2"),
             arrayOf<Any>("7.0.2"),
             arrayOf<Any>("7.1.1"),
             arrayOf<Any>("7.2"),
-            arrayOf<Any>("7.3"),
+            arrayOf<Any>("7.3.3"),
+            arrayOf<Any>("7.4.2"),
         )
     }
 
