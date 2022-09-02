@@ -1,13 +1,13 @@
 package com.cherryperry.gfe
 
 import java.security.Key
-import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
+import kotlin.random.Random
 
 const val ITERATIONS = 10_000
 const val KEY_LENGTH_BYTES = 16
@@ -25,9 +25,9 @@ fun generateKey(password: CharArray): SecretKey {
     }
 }
 
-fun generateIv(): ByteArray {
+fun generateIv(fileName: String): ByteArray {
     val ivBytes = ByteArray(KEY_LENGTH_BYTES)
-    SecureRandom.getInstanceStrong().nextBytes(ivBytes)
+    Random(fileName.hashCode()).nextBytes(ivBytes)
     return ivBytes
 }
 

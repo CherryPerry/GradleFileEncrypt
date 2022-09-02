@@ -218,12 +218,6 @@ class FileEncryptPluginFunctionalTest(
     }
 
     @Test
-    @Ignore(
-        """
-        Gradle can remove output files to regenerate them via InputChanges API (see docs).
-        It means that IV and the encrypted file will be different on the second run.
-        """
-    )
     fun testEncryptSameResultTwiceNoCache() {
         // 2 passes of encryption task should produce same result
         val testFile = temporaryFolder.newFile()
