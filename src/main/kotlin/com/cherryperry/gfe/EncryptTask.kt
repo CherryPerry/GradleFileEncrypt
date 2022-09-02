@@ -118,7 +118,7 @@ open class EncryptTask @Inject constructor(
                     iv
                 }
             } else {
-                generateIv()
+                generateIv(plainFile.name)
             }
 
         private fun writeFile(cipher: Cipher) {
