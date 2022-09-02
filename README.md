@@ -14,7 +14,7 @@ Add `secret_keys.properties` to `.gitignore` and add `secret_keys.properties.enc
 
 ```groovy
 plugins {
-    id 'com.cherryperry.gradle-file-encrypt' version '2.0.2'
+    id 'com.cherryperry.gradle-file-encrypt' version '2.0.3'
 }
 ```
 
@@ -26,7 +26,7 @@ buildscript {
         maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
-        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:2.0.2'
+        classpath 'gradle.plugin.com.cherryperry.gfe:gradle-file-encrypt:2.0.3'
     }
 }
 
